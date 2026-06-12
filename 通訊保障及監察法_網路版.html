@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通訊保障及監察法（網路版）</title>
+<style>
+  :root {
+    --bg: #f7faf8; --surface: #fff; --border: #d8e5df;
+    --text: #1a1a1a; --text-muted: #5a6b62;
+    --accent: #2d6b5a; --accent-light: #eef5f1;
+    --history-bg: #f0f5f2; --history-border: #bdd0c6;
+    --font: -apple-system, BlinkMacSystemFont, "Noto Serif TC", "Source Han Serif TC", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text);
+         font-size: 16px; line-height: 1.8; padding: 0 0 60px; }
+
+  header { background: var(--accent); color: white; padding: 14px 16px;
+            position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 18px; font-weight: 600; font-family: var(--font-ui); letter-spacing: .05em; }
+
+  .search-wrap { padding: 10px 16px; background: var(--surface);
+                  border-bottom: 1px solid var(--border); position: sticky; top: 48px; z-index: 99; }
+  .search-wrap input { width: 100%; padding: 8px 12px; font-size: 15px;
+                        font-family: var(--font-ui); border: 1px solid var(--border);
+                        border-radius: 8px; background: var(--bg); outline: none; color: var(--text); }
+  .search-wrap input:focus { border-color: var(--accent); background: white; }
+
+  .article { margin: 16px 16px 0; background: var(--surface);
+              border: 1px solid var(--border); border-radius: 10px 10px 0 0; overflow: hidden; }
+  .article-header { padding: 12px 16px 8px; border-bottom: 1px solid var(--border); }
+  .article-num { font-size: 20px; font-weight: 700; color: var(--accent); font-family: var(--font-ui); }
+  .article-date { font-size: 12px; color: var(--text-muted); font-family: var(--font-ui); margin-top: 2px; }
+  .article-body { padding: 12px 16px; }
+
+  .clause { display: flex; gap: 1em; margin-bottom: 6px; font-size: 15.5px; }
+  .clause:last-child { margin-bottom: 0; }
+  .clause-num { flex-shrink: 0; color: var(--text-muted); font-family: var(--font-ui);
+                 font-size: 13px; padding-top: .18em; min-width: 1.2em; }
+  .clause.no-num .clause-num { min-width: 0; }
+
+  .reason-block { margin: 0 16px; background: var(--accent-light);
+                   border: 1px solid #b8d4c4; border-top: none; padding: 12px 16px; }
+  .reason-label { font-size: 12px; font-weight: 700; color: var(--accent);
+                   font-family: var(--font-ui); letter-spacing: .08em; margin-bottom: 8px; }
+  .reason-text { font-size: 14px; color: #333; line-height: 1.75; }
+  .reason-text p { margin-bottom: 6px; }
+  .reason-text p:last-child { margin-bottom: 0; }
+
+  .history-toggle { display: flex; align-items: center; gap: 8px; width: 100%;
+                     padding: 10px 16px; background: var(--history-bg);
+                     border: 1px solid var(--history-border); border-top: none;
+                     margin: 0 16px; cursor: pointer; font-family: var(--font-ui);
+                     font-size: 13px; font-weight: 600; color: #555;
+                     border-radius: 0 0 10px 10px; -webkit-tap-highlight-color: transparent; }
+  .history-toggle:hover { background: #ede9df; }
+  .history-toggle .arrow { margin-left: auto; font-size: 11px; transition: transform .25s; color: #888; }
+  .history-toggle.open .arrow { transform: rotate(180deg); }
+  .history-toggle.open { border-radius: 0; }
+
+  .article-no-history { border-radius: 10px !important; margin-bottom: 16px; }
+  .reason-block-last { border-radius: 0 0 10px 10px !important; margin-bottom: 16px; }
+
+  .history-content { display: none; margin: 0 16px 16px;
+                      border: 1px solid var(--history-border); border-top: none;
+                      border-radius: 0 0 10px 10px; overflow: hidden; }
+  .history-content.open { display: block; }
+
+  .history-entry { border-bottom: 1px solid var(--history-border); }
+  .history-entry:last-child { border-bottom: none; }
+  .history-entry-header { padding: 9px 14px; background: #e6eeea;
+                           font-size: 13px; font-family: var(--font-ui); font-weight: 600; color: #3a5045; }
+  .history-clauses { padding: 10px 14px; background: #faf9f5; }
+  .history-clause { display: flex; gap: 1em; font-size: 14px; line-height: 1.75; margin-bottom: 4px; color: #333; }
+  .history-clause:last-child { margin-bottom: 0; }
+  .history-clause-num { flex-shrink: 0; color: #999; font-family: var(--font-ui);
+                         font-size: 12px; padding-top: .18em; min-width: 1.2em; }
+  .history-clause.no-num .history-clause-num { min-width: 0; }
+  .history-reason-label { font-size: 11px; font-weight: 700; color: #777;
+                           font-family: var(--font-ui); letter-spacing: .08em;
+                           padding: 8px 14px 4px; background: #faf9f5; }
+  .history-reason { padding: 0 14px 10px; background: #faf9f5;
+                     font-size: 13px; line-height: 1.75; color: #444; }
+  .history-reason p { margin-bottom: 5px; }
+  .history-reason p:last-child { margin-bottom: 0; }
+
+  .no-results { text-align: center; padding: 40px 20px; color: var(--text-muted);
+                 font-family: var(--font-ui); display: none; }
+
+  /* ── 老花版：字體放大 ── */
+  body { font-size: 18px !important; line-height: 1.95 !important; }
+  .article-num  { font-size: 22px !important; }
+  .article-date { font-size: 14px !important; }
+  .clause       { font-size: 17px !important; }
+  .clause-num   { font-size: 14px !important; }
+  .search-wrap input { font-size: 17px !important; padding: 10px 14px !important; }
+  .reason-text  { font-size: 15.5px !important; line-height: 1.85 !important; }
+  .reason-label { font-size: 13px !important; }
+  .history-clause     { font-size: 15.5px !important; }
+  .history-clause-num { font-size: 13px !important; }
+  .history-reason     { font-size: 14.5px !important; }
+  .history-entry-header { font-size: 14px !important; }
+  .history-toggle { font-size: 14px !important; padding: 12px 16px !important; }
+
+  /* ── 螢光標記 ── */
+  mark.ann { cursor: pointer; border-radius: 2px; padding: 0 1px; font: inherit; color: inherit; }
+  mark.ann-yellow { background: rgba(255, 214,   0, 0.42); }
+  mark.ann-green  { background: rgba( 56, 195, 107, 0.38); }
+  mark.ann-blue   { background: rgba( 66, 153, 225, 0.38); }
+  mark.ann-pink   { background: rgba(237, 100, 166, 0.38); }
+  mark.ann.has-comment::after {
+    content: '●'; font-size: 7px; vertical-align: super;
+    margin-left: 1px; color: #888;
+  }
+
+  /* ── 連線狀態列 ── */
+  #conn-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 16px; font-size: 13px; font-family: var(--font-ui);
+    position: sticky; top: 95px; z-index: 98;
+    background: #f8f8f8; border-bottom: 1px solid #e0e0e0;
+    color: #555;
+  }
+  #conn-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #ccc; flex-shrink: 0; transition: background .4s;
+  }
+  #conn-dot.ok  { background: #48c774; }
+  #conn-dot.err { background: #f14668; }
+  #conn-dot.loading { background: #ffdd57; }
+
+  /* ── 新增注記 popup ── */
+  #ann-add-popup {
+    position: fixed; z-index: 300; display: none;
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.18);
+    padding: 16px; min-width: 260px;
+    border: 1px solid #ddd; font-family: var(--font-ui);
+  }
+  #ann-add-popup .pop-title { font-size: 13px; color: #666; margin-bottom: 10px; }
+  #ann-add-popup .color-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .color-btn {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 2.5px solid transparent; cursor: pointer; transition: transform .1s;
+  }
+  .color-btn:hover { transform: scale(1.15); }
+  .color-btn.sel   { border-color: #333; transform: scale(1.1); }
+  .cb-yellow { background: rgba(255,214,  0,.8); }
+  .cb-green  { background: rgba( 56,195,107,.8); }
+  .cb-blue   { background: rgba( 66,153,225,.8); }
+  .cb-pink   { background: rgba(237,100,166,.8); }
+  #ann-comment-input {
+    width: 100%; border: 1px solid #ddd; border-radius: 8px;
+    padding: 8px 10px; font-size: 16px; font-family: var(--font-ui);
+    margin-bottom: 12px; resize: none; outline: none; line-height: 1.5;
+  }
+  #ann-comment-input:focus { border-color: var(--accent); }
+  .pop-btns { display: flex; gap: 8px; justify-content: flex-end; }
+  .pop-btn {
+    padding: 8px 18px; border-radius: 8px; border: none;
+    cursor: pointer; font-size: 15px; font-family: var(--font-ui); font-weight: 600;
+  }
+  .pop-btn-cancel { background: #f0f0f0; color: #555; }
+  .pop-btn-save   { background: var(--accent); color: #fff; }
+
+  /* ── 查看注記 popup ── */
+  #ann-view-popup {
+    position: fixed; z-index: 300; display: none;
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.18);
+    padding: 14px 16px; min-width: 200px; max-width: 280px;
+    border: 1px solid #ddd; font-family: var(--font-ui);
+  }
+  #ann-view-comment {
+    font-size: 15px; color: #333; margin-bottom: 12px;
+    line-height: 1.6; white-space: pre-wrap;
+  }
+  .view-btns { display: flex; gap: 8px; }
+  .view-btn {
+    flex: 1; padding: 8px; border-radius: 8px; border: none;
+    cursor: pointer; font-size: 14px; font-family: var(--font-ui); font-weight: 600;
+  }
+  #ann-del-btn   { background: #fee; color: #c00; }
+  #ann-close-btn { background: #f0f0f0; color: #555; }
+
+  /* ── FAB ── */
+  #ann-fab { position: fixed; bottom: 24px; right: 18px; z-index: 200; }
+  #ann-fab-main {
+    width: 50px; height: 50px; border-radius: 50%;
+    background: var(--accent); color: #fff; border: none; font-size: 22px;
+    cursor: pointer; box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  #ann-badge {
+    position: absolute; top: -4px; right: -4px;
+    background: #e74; color: #fff; border-radius: 10px;
+    font-size: 11px; font-family: var(--font-ui);
+    padding: 2px 6px; display: none;
+  }
+  #ann-fab-menu {
+    display: none; flex-direction: column; gap: 8px;
+    align-items: flex-end; margin-bottom: 10px;
+  }
+  #ann-fab-menu.open { display: flex; }
+  .fab-menu-btn {
+    background: #fff; color: var(--accent);
+    border: 1.5px solid var(--accent); border-radius: 20px;
+    padding: 8px 16px; font-size: 14px; font-family: var(--font-ui);
+    font-weight: 600; cursor: pointer; white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+
+  /* Mobile：popup → bottom sheet */
+  @media (max-width: 640px) {
+    #ann-add-popup {
+      bottom: 0 !important; top: auto !important;
+      left: 0 !important; right: 0 !important;
+      border-radius: 18px 18px 0 0 !important;
+      min-width: unset; max-width: unset; padding: 20px 18px 32px;
+    }
+    #ann-view-popup {
+      bottom: 0 !important; top: auto !important;
+      left: 0 !important; right: 0 !important;
+      border-radius: 18px 18px 0 0 !important;
+      min-width: unset; max-width: unset; padding: 20px 18px 32px;
+    }
+  }
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header><h1>通訊保障及監察法</h1></header>
+<div class="search-wrap">
+  <input type="search" id="searchInput" placeholder="搜尋條號或關鍵字…" inputmode="search">
+</div>
+
+<div id="conn-bar">
+  <span id="conn-dot" class="loading"></span>
+  <span id="conn-text">連線中…</span>
+</div>
+
+<div id="articleList">
+<div class="article-group">
+<div class="article" data-article="1">
+  <div class="article-header">
+    <div class="article-num">第 1 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>為保障人民秘密通訊自由及隱私權不受非法侵害，並確保國家安全，維護社會秩序，特制定本法。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="1">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>「言論及談話」係屬通訊之一，並以有事實足認受監察人對其通訊內容有隱私或秘密之合理期待者為限。「言論及談話」應歸屬憲法第二十二條隱私權之保障，為保障人民秘密通訊自由及隱私權不受非法侵害，爰修正原條文，俾符實際。</p></div>
+</div>
+<button class="history-toggle" data-article="1" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="1">
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause no-num"><span class="history-clause-num"></span><span>為保障人民秘密通訊自由不受非法侵害，並確保國家安全，維持社會秩序，特制定本法。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="2">
+  <div class="article-header">
+    <div class="article-num">第 2 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>通訊監察，除為確保國家安全、維持社會秩序所必要者外，不得為之。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>前項監察，不得逾越所欲達成目的之必要限度，且應以侵害最少之適當方法為之。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="2">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="3">
+  <div class="article-header">
+    <div class="article-num">第 3 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>本法所稱通訊如下：</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>一、利用電信設備發送、儲存、傳輸或接收符號、文字、影像、聲音或其他信息之有線及無線電信。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二、郵件及書信。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>三、言論及談話。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>前項所稱之通訊，以有事實足認受監察人對其通訊內容有隱私或秘密之合理期待者為限。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="3">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="3_z一">
+  <div class="article-header">
+    <div class="article-num">第 3 之 1 條</div>
+    <div class="article-date">113年7月12日修正，113年7月31日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>本法所稱通信紀錄，指用戶或電信使用人使用電信服務後，公眾電信網路所產生之發送方、接收方之電信號碼、通信時間、使用長度、位址、服務型態、信箱或位置資訊等紀錄。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>本法所稱通訊使用者資料，指用戶或電信使用人姓名或名稱、身分證明文件字號、地址、電信號碼及申請各項電信服務所填列之資料。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>本法所稱網路流量紀錄，指用戶或電信使用人使用電信服務後，公眾電信網路所產生之通訊設備識別資料、網際網路位址與位置資訊、通信時間、連線用量與封包數量、網域名稱、應用服務類型及協定等未涉及通訊內容之紀錄。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="3_z一">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>照委員所提修正動議通過。</p></div>
+</div>
+<button class="history-toggle" data-article="3_z一" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="3_z一">
+  <div class="history-entry">
+    <div class="history-entry-header">103年1月14日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>本法所稱通信紀錄者，謂電信使用人使用電信服務後，電信系統所產生之發送方、接收方之電信號碼、通信時間、使用長度、位址、服務型態、信箱或位置資訊等紀錄。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>本法所稱之通訊使用者資料，謂電信使用者姓名或名稱、身分證明文件字號、地址、電信號碼及申請各項電信服務所填列之資料。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、本條新增。</p><p>二、為保障憲法第十二條人民秘密通訊自由並落實司法院大法官會議第631號解釋意旨，將通信紀錄納入通訊監察法制範圍內，爰增訂通信紀錄之定義。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="4">
+  <div class="article-header">
+    <div class="article-num">第 4 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>本法所稱受監察人，除第五條及第七條所規定者外，並包括為其發送、傳達、收受通訊或提供通訊器材、處所之人。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="4">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="5">
+  <div class="article-header">
+    <div class="article-num">第 5 條</div>
+    <div class="article-date">113年7月12日修正，113年7月31日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>有事實足認被告或犯罪嫌疑人有下列各款罪嫌之一，並危害國家安全、經濟秩序或社會秩序情節重大，而有相當理由可信其通訊內容與本案有關，且不能或難以其他方法蒐集或調查證據者，得發通訊監察書：</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>一、最輕本刑為三年以上有期徒刑之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二、刑法第一百條第二項之預備內亂罪、第一百零一條第二項之預備暴動內亂罪或第一百零六條第三項、第一百零九條第一項及其未遂犯、第四項、第一百二十一條、第一百二十二條第三項、第一百三十一條、第一百四十二條、第一百四十三條、第一百四十四條、第一百四十五條、第二百零一條之一、第二百五十六條第一項及其未遂犯、第二百五十七條第一項及其未遂犯、第二百九十八條第二項及其未遂犯、第三百條、第三百零二條第一項、第三項、第三百零二條之一第一項、第三項、第三百十九條之一第二項、第三項及該二項之未遂犯、第三百十九條之二、第三百十九條之三、第三百十九條之四、第三百三十九條、第三百三十九條之三、第三百三十九條之四或第三百四十六條之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>三、貪污治罪條例第十一條第一項、第四項關於違背職務行為之行賄罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>四、懲治走私條例第二條第一項、第二項或第三條之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>五、藥事法第八十二條第一項、第四項或第八十三條第一項、第四項之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>六、證券交易法第一百七十三條第一項之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>七、期貨交易法第一百十二條第五項或第一百十三條之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>八、槍砲彈藥刀械管制條例第十二條第一項、第二項及該二項之未遂犯、第四項或第十三條第二項及其未遂犯、第四項之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>九、公職人員選舉罷免法第一百零二條第一項第一款之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>十、農會法第四十七條之一第一項或第四十七條之二第一項、第二項之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>十一、漁會法第五十條之一第一項或第五十條之二第一項、第二項之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>十二、兒童及少年性剝削防制條例第三十二條第一項、第三項、第四項及該三項之未遂犯、第三十六條第一項、第四項及該二項之未遂犯、第三十八條第一項、第三項及第四項之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>十三、洗錢防制法第十九條至第二十一條或資恐防制法第八條、第九條之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>十四、組織犯罪防制條例第三條第一項後段、第四條、第六條或第十一條第三項之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>十五、陸海空軍刑法第十四條第二項、第十七條第三項、第十八條第三項、第十九條第三項、第二十條第五項、第二十二條第一項前段、第四項、第二十三條第三項、第二十四條第二項及其未遂犯、第四項、第五十八條第五項、第六十三條第一項之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>十六、營業秘密法第十三條之二第一項、第二項之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>十七、森林法第五十二條第一項、第二項之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>十八、廢棄物清理法第四十六條之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>十九、國家安全法第七條第二項、第三項及該二項之未遂犯之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二十、反滲透法第三條、第四條之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二十一、人口販運防制法第二十九條、第三十條、第三十一條、第三十三條之罪。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二十二、詐欺犯罪危害防制條例第四十四條之罪。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>前項通訊監察書，偵查中由檢察官依司法警察機關聲請或依職權以書面聲請該管法院核發。聲請書應記載偵、他字案號及第十一條之事項，其監察對象非電信服務用戶，應予載明；並檢附相關文件及監察對象住居所之調查資料，釋明有相當理由可信其通訊內容與本案有關，且曾以其他方法調查仍無效果，或以其他方法調查，合理顯示為不能達成目的或有重大危險情形。檢察官受理聲請案件，應於四小時內核復；如案情複雜，得經檢察長同意延長四小時。法院於接獲檢察官核轉受理聲請案件，應於四十八小時內核復。審判中由法官依職權核發。法官並得於通訊監察書上對執行人員為適當之指示。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>前項聲請不合法定程序、不備理由、未經釋明或釋明不足者，法院應予駁回。其聲請經法院駁回者，不得聲明不服。</span></p>
+<p class="clause"><span class="clause-num">4</span><span>執行機關應於執行監聽期間內，每十五日至少作成一次以上之報告書，說明監聽行為之進行情形，以及有無繼續執行監聽之需要。檢察官或核發通訊監察書之法官並得隨時命執行機關提出報告。法官依據經驗法則、論理法則自由心證判斷後，發現有不應繼續執行監聽之情狀時，應撤銷原核發之通訊監察書。</span></p>
+<p class="clause"><span class="clause-num">5</span><span>通訊監察書之聲請，應以單一監察對象為限，同一偵、他字或相牽連案件，得同時聲請數張通訊監察書。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="5">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、因應多部法律修正，修正第一項各款得為通訊監察之罪名如下：</p><p>(一)私行拘禁或剝奪他人行動自由之行為，極易對被害人之生命、身體安全造成嚴重威脅，為儘速查緝，有通訊監察之必要；另因應刑法修正增訂第三百三十九條之四，此類詐欺犯罪情節、手法造成損害範圍較廣，有澈底查緝及追查金流之必要，爰均於第二款增訂之。 (二)因應刑法增訂妨害性隱私及不實性影像罪章，及兒童及少年性剝削防制條例之修正，考量此類犯罪及具營利意圖者造成之損害及犯罪之隱密性，若未能實施通訊監察恐難以查緝，爰於第二款及第十二款分別增訂之。 (三)期貨交易法於一百零五年十一月九日修正，該法原一百十二條之條文業已移列為同條第五項，爰修正第七款規定。 (四)洗錢防制法於一百零五年十二月二十八日修正公布全文，原第十一條第一項、第二項修正為第十四條規定，並增訂第十五條之一收集他人帳戶或帳號罪，原第十一條第三項之罪因資恐防制法第八條已有相關規範，爰予刪除；爰配合洗錢防制法修正草案之條次，修正第十三款規定。另恐怖活動相關犯罪嚴重危害國家社會安全，查緝前階段之資助行為至關重要，爰於第十三款增列資恐防制法第八條、第九條之罪。 (五)組織犯罪防制條例已刪除原第三條第二項之罪，並修正第四條規定，考量組織犯罪危害治安甚鉅，爰修正第十四款規定，並增列組織犯罪防制條例第四條之罪。 (六)本條第一項第十五款已將陸海空軍刑法第二十二條第四項預備或陰謀犯第一項之罪，列為得予通訊監察之範圍，故該第二十二條第一項前段之罪自應納入為得予通訊監察之罪，始不輕重失衡，爰於第十五款增列之。 (七)有鑑於境外敵對勢力之威脅日增，為維護國家安全，爰於第十九款、第二十款分別增列國家安全法第七條第二項、第三項及該二項之未遂犯、反滲透法第三條、第四條之罪。 (八)考量人口販運防制法相關犯罪嚴重危害被害人之生命、身體安全，應儘速查緝，爰於第二十一款增列該法之罪。 (九)為澈底打擊詐欺犯罪，爰於第二十二款增列詐欺危害犯罪防制條例草案第四十四條複合型詐欺犯罪為得予通訊監察之罪。 (十)另部分款次酌作文字修正。</p><p>二、第二項至第五項未修正。</p></div>
+</div>
+<button class="history-toggle" data-article="5" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="5">
+  <div class="history-entry">
+    <div class="history-entry-header">105年3月25日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>有事實足認被告或犯罪嫌疑人有下列各款罪嫌之一，並危害國家安全、經濟秩序或社會秩序情節重大，而有相當理由可信其通訊內容與本案有關，且不能或難以其他方法蒐集或調查證據者，得發通訊監察書。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>一、最輕本刑為三年以上有期徒刑之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>二、刑法第一百條第二項之預備內亂罪、第一百零一條第二項之預備暴動內亂罪或第一百零六條第三項、第一百零九條第一項、第三項、第四項、第一百二十一條第一項、第一百二十二條第三項、第一百三十一條第一項、第一百四十二條、第一百四十三條第一項、第一百四十四條、第一百四十五條、第二百零一條之一、第二百五十六條第一項、第三項、第二百五十七條第一項、第四項、第二百九十八條第二項、第三百條、第三百三十九條、第三百三十九條之三或第三百四十六條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>三、貪污治罪條例第十一條第一項、第四項關於違背職務行為之行賄罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>四、懲治走私條例第二條第一項、第二項或第三條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>五、藥事法第八十二條第一項、第四項或第八十三條第一項、第四項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>六、證券交易法第一百七十三條第一項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>七、期貨交易法第一百十二條或第一百十三條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>八、槍砲彈藥刀械管制條例第十二條第一項、第二項、第四項、第五項或第十三條第二項、第四項、第五項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>九、公職人員選舉罷免法第一百零二條第一項第一款之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十、農會法第四十七條之一或第四十七條之二之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十一、漁會法第五十條之一或第五十條之二之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十二、兒童及少年性剝削防制條例第三十二條第一項、第三項、第四項、第五項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十三、洗錢防制法第十一條第一項至第三項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十四、組織犯罪防制條例第三條第一項後段、第二項後段、第六條或第十一條第三項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十五、陸海空軍刑法第十四條第二項、第十七條第三項、第十八條第三項、第十九條第三項、第二十條第五項、第二十二條第四項、第二十三條第三項、第二十四條第二項、第四項、第五十八條第五項、第六十三條第一項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十六、營業秘密法第十三條之二第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十七、森林法第五十二條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十八、廢棄物清理法第四十六條之罪。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項通訊監察書，偵查中由檢察官依司法警察機關聲請或依職權以書面聲請該管法院核發。聲請書應記載偵、他字案號及第十一條之事項，其監察對象非電信服務用戶，應予載明；並檢附相關文件及監察對象住居所之調查資料，釋明有相當理由可信其通訊內容與本案有關，且曾以其他方法調查仍無效果，或以其他方法調查，合理顯示為不能達成目的或有重大危險情形。檢察官受理聲請案件，應於四小時內核復；如案情複雜，得經檢察長同意延長四小時。法院於接獲檢察官核轉受理聲請案件，應於四十八小時內核復。審判中由法官依職權核發。法官並得於通訊監察書上對執行人員為適當之指示。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>前項聲請不合法定程序、不備理由、未經釋明或釋明不足者，法院應予駁回。其聲請經法院駁回者，不得聲明不服。</span></p>
+<p class="history-clause"><span class="history-clause-num">4</span><span>執行機關應於執行監聽期間內，每十五日至少作成一次以上之報告書，說明監聽行為之進行情形，以及有無繼續執行監聽之需要。檢察官或核發通訊監察書之法官並得隨時命執行機關提出報告。法官依據經驗法則、論理法則自由心證判斷後，發現有不應繼續執行監聽之情狀時，應撤銷原核發之通訊監察書。</span></p>
+<p class="history-clause"><span class="history-clause-num">5</span><span>通訊監察書之聲請，應以單一監察對象為限，同一偵、他字或相牽連案件，得同時聲請數張通訊監察書。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、兒童及少年性交易防制條例業於一百零四年二月四日修正公布，名稱修正為兒童及少年性剝削防制條例並修正全文，其中原第二十三條變更條次為第三十二條，爰配合修正第一項第十二款所引用之法律名稱及條次。</p><p>二、第二項至第五項未修正。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">103年1月14日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>有事實足認被告或犯罪嫌疑人有下列各款罪嫌之一，並危害國家安全、經濟秩序或社會秩序情節重大，而有相當理由可信其通訊內容與本案有關，且不能或難以其他方法蒐集或調查證據者，得發通訊監察書。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>一、最輕本刑為三年以上有期徒刑之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>二、刑法第一百條第二項之預備內亂罪、第一百零一條第二項之預備暴動內亂罪或第一百零六條第三項、第一百零九條第一項、第三項、第四項、第一百二十一條第一項、第一百二十二條第三項、第一百三十一條第一項、第一百四十二條、第一百四十三條第一項、第一百四十四條、第一百四十五條、第二百零一條之一、第二百五十六條第一項、第三項、第二百五十七條第一項、第四項、第二百九十八條第二項、第三百條、第三百三十九條、第三百三十九條之三或第三百四十六條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>三、貪污治罪條例第十一條第一項、第四項關於違背職務行為之行賄罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>四、懲治走私條例第二條第一項、第二項或第三條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>五、藥事法第八十二條第一項、第四項或第八十三條第一項、第四項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>六、證券交易法第一百七十三條第一項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>七、期貨交易法第一百十二條或第一百十三條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>八、槍砲彈藥刀械管制條例第十二條第一項、第二項、第四項、第五項或第十三條第二項、第四項、第五項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>九、公職人員選舉罷免法第一百零二條第一項第一款之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十、農會法第四十七條之一或第四十七條之二之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十一、漁會法第五十條之一或第五十條之二之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十二、兒童及少年性交易防制條例第二十三條第一項、第三項、第四項、第五項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十三、洗錢防制法第十一條第一項至第三項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十四、組織犯罪防制條例第三條第一項後段、第二項後段、第六條或第十一條第三項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十五、陸海空軍刑法第十四條第二項、第十七條第三項、第十八條第三項、第十九條第三項、第二十條第五項、第二十二條第四項、第二十三條第三項、第二十四條第二項、第四項、第五十八條第五項、第六十三條第一項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十六、營業秘密法第十三條之二第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十七、森林法第五十二條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十八、廢棄物清理法第四十六條之罪。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項通訊監察書，偵查中由檢察官依司法警察機關聲請或依職權以書面聲請該管法院核發。聲請書應記載偵、他字案號及第十一條之事項，其監察對象非電信服務用戶，應予載明；並檢附相關文件及監察對象住居所之調查資料，釋明有相當理由可信其通訊內容與本案有關，且曾以其他方法調查仍無效果，或以其他方法調查，合理顯示為不能達成目的或有重大危險情形。檢察官受理聲請案件，應於四小時內核復；如案情複雜，得經檢察長同意延長四小時。法院於接獲檢察官核轉受理聲請案件，應於四十八小時內核復。審判中由法官依職權核發。法官並得於通訊監察書上對執行人員為適當之指示。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>前項聲請不合法定程序、不備理由、未經釋明或釋明不足者，法院應予駁回。其聲請經法院駁回者，不得聲明不服。</span></p>
+<p class="history-clause"><span class="history-clause-num">4</span><span>執行機關應於執行監聽期間內，每十五日至少作成一次以上之報告書，說明監聽行為之進行情形，以及有無繼續執行監聽之需要。檢察官或核發通訊監察書之法官並得隨時命執行機關提出報告。法官依據經驗法則、論理法則自由心證判斷後，發現有不應繼續執行監聽之情狀時，應撤銷原核發之通訊監察書。</span></p>
+<p class="history-clause"><span class="history-clause-num">5</span><span>通訊監察書之聲請，應以單一監察對象為限，同一偵、他字或相牽連案件，得同時聲請數張通訊監察書。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>依協商條文通過。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">96年6月15日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>有事實足認被告或犯罪嫌疑人有下列各款罪嫌之一，並危害國家安全或社會秩序情節重大，而有相當理由可信其通訊內容與本案有關，且不能或難以其他方法蒐集或調查證據者，得發通訊監察書。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>一、最輕本刑為三年以上有期徒刑之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>二、刑法第一百條第二項之預備內亂罪、第一百零一條第二項之預備暴動內亂罪或第一百零六條第三項、第一百零九條第一項、第三項、第四項、第一百二十一條第一項、第一百二十二條第三項、第一百三十一條第一項、第一百四十二條、第一百四十三條第一項、第一百四十四條、第一百四十五條、第二百零一條之一、第二百五十六條第一項、第三項、第二百五十七條第一項、第四項、第二百九十八條第二項、第三百條、第三百三十九條、第三百三十九條之三或第三百四十六條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>三、貪污治罪條例第十一條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>四、懲治走私條例第二條第一項、第三項或第三條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>五、藥事法第八十二條第一項、第三項或第八十三條第一項、第四項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>六、證券交易法第一百七十一條或第一百七十三條第一項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>七、期貨交易法第一百十二條或第一百十三條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>八、槍砲彈藥刀械管制條例第十二條第一項、第二項、第四項、第五項或第十三條第二項、第四項、第五項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>九、公職人員選舉罷免法第八十八條第一項、第八十九條第一項、第二項、第九十條之一第一項、第九十一條第一項第一款或第九十一條之一第一項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十、農會法第四十七條之一或第四十七條之二之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十一、漁會法第五十條之一或第五十條之二之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十二、兒童及少年性交易防制條例第二十三條第一項、第四項、第五項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十三、洗錢防制法第九條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十四、組織犯罪防制條例第三條第一項後段、第二項後段、第六條或第十一條第三項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十五、陸海空軍刑法第十四條第二項、第十七條第三項、第十八條第三項、第十九條第三項、第二十條第五項、第二十二條第四項、第二十三條第三項、第二十四條第二項、第四項、第五十八條第五項、第六十三條第一項之罪。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項通訊監察書，偵查中由檢察官依司法警察機關聲請或依職權以書面記載第十一條之事項，並敘明理由、檢附相關文件，聲請該管法院核發；檢察官受理申請案件，應於二小時內核復。如案情複雜，得經檢察長同意延長二小時。法院於接獲檢察官核轉受理申請案件，應於二十四小時內核復。審判中由法官依職權核發。法官並得於通訊監察書上對執行人員為適當之指示。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>前項之聲請經法院駁回者，不得聲明不服。</span></p>
+<p class="history-clause"><span class="history-clause-num">4</span><span>執行機關應於執行監聽期間，至少作成一次以上之報告書，說明監聽行為之進行情形，以及有無繼續執行監聽之需要。法官依據經驗法則、論理法則自由心證判斷後，發現有不應繼續執行監聽之情狀時，應撤銷原核發之通訊監察書。</span></p>
+<p class="history-clause"><span class="history-clause-num">5</span><span>違反本條規定進行監聽行為情節重大者，所取得之內容或所衍生之證據，於司法偵查、審判或其他程序中，均不得採為證據。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、第五條第一項第二款增訂刑法第二百零一條之一，將偽造、變造信用卡之罪，列為得實施通訊監察之範圍，以利於查緝信用卡詐欺集團。</p><p>二、因應刑法修正刪除常業犯之規定，爰將原條文第五條第一項第二款常業詐欺及常業重利之規定刪除，以符現行規定。</p><p>三、因應槍砲彈藥刀修正，爰將第五條第一項第八款槍砲彈藥刀械管制條例第八條第四項、第十一條第四項之規定刪除。</p><p>四、為配合軍事審判法及陸海空軍刑法之修正，故於第五條第一項增訂第十五款之規定，將陸海空軍刑法所規範之部分罪名納入得通訊監察之範圍。</p><p>五、偵查中通訊監察書之核發，改由法官審核。並增列法官得對執行人員為適當指示之規定，俾使相關執行人員確實遵守法律規範。</p><p>六、因採行通訊監察通常均在犯罪偵查初期，首重隱密，如其聲請遭法院駁回，再行補強事證重行聲請即可；如准其循抗告程序救濟者，不但使程序無謂拖延，且徒增通訊監察對象外洩機會，故增訂本條第三項。</p><p>七、為落實人權保障，故增訂本條第四項，使執行機關應負於通訊監察期間提出報告之義務，若發現無通訊監察之必要時，得由法院撤銷通訊監察書，儘早停止通訊監察，以維人權。</p><p>八、為落實人權保障，故明定違反本條之相關規定執行監聽所取得之證據應予排除。至於違法之情節是否重大，則應由法官據個案予以審核。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">95年5月5日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>有事實足認被告或犯罪嫌疑人有下列各款罪嫌之一，並危害國家安全或社會秩序情節重大，而有相當理由可信其通訊內容與本案有關，且不能或難以其他方法蒐集或調查證據者，得發通訊監察書。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>一、最輕本刑為三年以上有期徒刑之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>二、刑法第一百條第二項之預備內亂罪、第一百零一條第二項之預備暴動內亂罪或第一百零六條第三項、第一百零九條第一項、第三項、第四項、第一百二十一條第一項、第一百二十二條第三項、第一百三十一條第一項、第一百四十二條、第一百四十三條第一項、第一百四十四條、第一百四十五條、第二百五十六條第一項、第三項、第二百五十七條第一項、第四項、第二百九十八條第二項、第三百條、第三百三十九條、第三百三十九條之三或第三百四十六條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>三、貪污治罪條例第十一條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>四、懲治走私條例第二條第一項、第二項或第三條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>五、藥事法第八十二條第一項、第二項或第八十三條第一項、第三項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>六、銀行法第一百二十五條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>七、證券交易法第一百七十一條或第一百七十三條第一項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>八、期貨交易法第一百十二條或第一百十三條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>九、槍砲彈藥刀械管制條例第八條第四項、第十一條第四項、第十二條第一項、第二項、第四項、第五項或第十三條第二項、第四項、第五項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十、公職人員選舉罷免法第八十八條第一項、第八十九條第一項、第二項、第九十條之一第一項、第九十一條第一項第一款或第九十一條之一第一項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十一、農會法第四十七條之一或第四十七條之二之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十二、漁會法第五十條之一或第五十條之二之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十三、兒童及少年性交易防制條例第二十三條第一項、第三項、第四項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十四、洗錢防制法第九條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十五、組織犯罪防制條例第三條第一項後段、第二項後段、第六條或第十一條第三項之罪。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項通訊監察書，偵查中由檢察官依司法警察機關聲請或依職權核發，審判中由法官依職權核發。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、配合相關法律之修正，酌修第一項各款：</p><p>（一）配合刑法第三百四十條及第三百四十五條之刪除，酌修第二款。 （二）懲治走私條例、藥事法與兒童及少年性交易防制條例已分別修正，將相關條文有關常業犯規定刪除。</p><p>二、第二項未修正。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>有事實足認被告或犯罪嫌疑人有下列各款罪嫌之一，並危害國家安全或社會秩序情節重大，而有相當理由可信其通訊內容與本案有關，且不能或難以其他方法蒐集或調查證據者，得發通訊監察書。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>一、最輕本刑為三年以上有期徒刑之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>二、刑法第一百條第二項之預備內亂罪、第一百零一條第二項之預備暴動內亂罪或第一百零六條第三項、第一百零九條第一項、第三項、第四項、第一百二十一條第一項、第一百二十二條第三項、第一百三十一條第一項、第一百四十二條、第一百四十三條第一項、第一百四十四條、第一百四十五條、第二百五十六條第一項、第三項、第二百五十七條第一項、第四項、第二百九十八條第二項、第三百條、第三百三十九條、第三百三十九條之三、第三百四十條、第三百四十五條或第三百四十六條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>三、貪污治罪條例第十一條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>四、懲治走私條例第二條第一項、第三項或第三條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>五、藥事法第八十二條第一項、第三項或第八十三條第一項、第四項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>六、銀行法第一百二十五條之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>七、證券交易法第一百七十一條或第一百七十三條第一項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>八、期貨交易法第一百十二條或第一百十三條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>九、槍砲彈藥刀械管制條例第八條第四項、第十一條第四項、第十二條第一項、第二項、第四項、第五項或第十三條第二項、第四項、第五項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十、公職人員選舉罷免法第八十八條第一項、第八十九條第一項、第二項、第九十條之一第一項、第九十一條第一項第一款或第九十一條之一第一項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十一、農會法第四十七條之一或第四十七條之二之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十二、漁會法第五十條之一或第五十條之二之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十三、兒童及少年性交易防制條例第二十三條第一項、第四項、第五項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十四、洗錢防制法第九條第一項、第二項之罪。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>十五、組織犯罪防制條例第三條第一項後段、第二項後段、第六條或第十一條第三項之罪。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項通訊監察書，偵查中由檢察官依司法警察機關聲請或依職權核發，審判中由法官依職權核發。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="6">
+  <div class="article-header">
+    <div class="article-num">第 6 條</div>
+    <div class="article-date">113年7月12日修正，113年7月31日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>有事實足認被告或犯罪嫌疑人有犯刑法妨害投票罪章、公職人員選舉罷免法、總統副總統選舉罷免法、槍砲彈藥刀械管制條例第七條、第八條、毒品危害防制條例第四條、擄人勒贖罪或以投置炸彈、爆裂物或投放毒物方法犯恐嚇取財罪、組織犯罪防制條例第三條、洗錢防制法第十九條、資恐防制法第八條、刑法第二百二十二條、第二百二十六條、第二百七十一條、第三百零二條之一、第三百二十五條、第三百二十六條、第三百二十八條、第三百三十條、第三百三十二條、第三百三十九條、第三百三十九條之三或第三百三十九條之四、詐欺犯罪危害防制條例第四十三條、第四十四條，為防止他人生命、身體、財產之急迫危險；或有事實足信有其他通訊作為前條第一項犯罪連絡而情形急迫者，司法警察機關得報請該管檢察官以口頭通知執行機關先予執行通訊監察。但檢察官應告知執行機關第十一條所定之事項，並於二十四小時內陳報該管法院補發通訊監察書；檢察機關為受理緊急監察案件，應指定專責主任檢察官或檢察官作為緊急聯繫窗口，以利掌握偵辦時效。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>法院應設置專責窗口受理前項聲請，並應於四十八小時內補發通訊監察書；未於四十八小時內補發者，應即停止監察。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="6">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、第一項所列組織犯罪條例，漏載「防制」二字，爰予修正。另洗錢防制法迭經修正，該法原第十一條第一項、第二項已修正為第十四條，第十一條第三項配合資恐防制法第八條規定刪除，洗錢防制法修正草案並將原第十四條修正為第十九條，爰修正第一項規定。</p><p>二、鑑於刑法第三百零二條之一之加重私行拘禁或剝奪行動自由之行為可能造成他人生命、身體安全之嚴重危害，有爭取時效儘速查緝及營救被害人之必要，爰於第一項增列之。</p><p>三、刑法第三百三十九條之三及第三百三十九條之四、詐欺犯罪危害防制條例草案第四十三條及第四十四條之詐欺犯罪類型，常有金流移轉快速、網路匿蹤或組織、集團犯罪特性，亟需儘速溯源、擴大查緝並追查金流去向，而有立即進行通訊監察之必要，爰於第一項增訂之。</p><p>四、第二項未修正。</p></div>
+</div>
+<button class="history-toggle" data-article="6" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="6">
+  <div class="history-entry">
+    <div class="history-entry-header">103年1月14日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>有事實足認被告或犯罪嫌疑人有犯刑法妨害投票罪章、公職人員選舉罷免法、總統副總統選舉罷免法、槍砲彈藥刀械管制條例第七條、第八條、毒品危害防制條例第四條、擄人勒贖罪或以投置炸彈、爆裂物或投放毒物方法犯恐嚇取財罪、組織犯罪條例第三條、洗錢防制法第十一條第一項、第二項、第三項、刑法第二百二十二條、第二百二十六條、第二百七十一條、第三百二十五條、第三百二十六條、第三百二十八條、第三百三十條、第三百三十二條及第三百三十九條，為防止他人生命、身體、財產之急迫危險；或有事實足信有其他通訊作為前條第一項犯罪連絡而情形急迫者，司法警察機關得報請該管檢察官以口頭通知執行機關先予執行通訊監察。但檢察官應告知執行機關第十一條所定之事項，並於二十四小時內陳報該管法院補發通訊監察書；檢察機關為受理緊急監察案件，應指定專責主任檢察官或檢察官作為緊急聯繫窗口，以利掌握偵辦時效。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>法院應設置專責窗口受理前項聲請，並應於四十八小時內補發通訊監察書；未於四十八小時內補發者，應即停止監察。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、刪除原條文第三項。</p><p>二、配合本法體例調整，將違反本法執行通訊監察之效力移於第十八條第三項規範，毋庸於個別條文中規定，以免失之瑣碎。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">96年6月15日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>有事實足認被告或犯罪嫌疑人有犯刑法妨害投票罪章、公職人員選舉罷免法、總統副總統選舉罷免法、槍砲彈藥刀械管制條例第七條、第八條、毒品危害防制條例第四條、擄人勒贖罪或以投置炸彈、爆裂物或投放毒物方法犯恐嚇取財罪、組織犯罪條例第三條、洗錢防制法第十一條第一項、第二項、第三項、刑法第二百二十二條、第二百二十六條、第二百七十一條、第三百二十五條、第三百二十六條、第三百二十八條、第三百三十條、第三百三十二條及第三百三十九條，為防止他人生命、身體、財產之急迫危險，司法警察機關得報請該管檢察官以口頭通知執行機關先予執行通訊監察。但檢察官應告知執行機關第十一條所定之事項，並於二十四小時內陳報該管法院補發通訊監察書；檢察機關為受理緊急監察案件，應指定專責主任檢察官或檢察官作為緊急聯繫窗口，以利掌握偵辦時效。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>法院應設置專責窗口受理前項聲請，並應於四十八小時內補發通訊監察書；未於四十八小時內補發者，應即停止監察。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>違反本條規定進行監聽行為情節重大者，所取得之內容或所衍生之證據，於司法偵查、審判或其他程序中，均不得採為證據。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>通訊監察權屬於強制處分權之一種，為使人民基本權利受到適當的保護，爰將通訊監察書的核發權修正為聲請法院裁定後為之，以資明確。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause no-num"><span class="history-clause-num"></span><span>有事實足認被告或犯罪嫌疑人有犯擄人勒贖罪或以投置炸彈、爆裂物或投放毒物方法犯恐嚇取財罪之嫌疑，為防止他人生命、身體之急迫危險，該管檢察官得以口頭通知執行機關先予執行通訊監察。但應告知執行機關第十一條所定之事項，並於二十四小時內補發通訊監察書；未於二十四小時內補發者，應即停止監察。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="7">
+  <div class="article-header">
+    <div class="article-num">第 7 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>為避免國家安全遭受危害，而有監察下列通訊，以蒐集外國勢力或境外敵對勢力情報之必要者，綜理國家情報工作機關首長得核發通訊監察書。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>一、外國勢力、境外敵對勢力或其工作人員在境內之通訊。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二、外國勢力、境外敵對勢力或其工作人員跨境之通訊。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>三、外國勢力、境外敵對勢力或其工作人員在境外之通訊。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>前項各款通訊之受監察人在境內設有戶籍者，其通訊監察書之核發，應先經綜理國家情報工作機關所在地之高等法院專責法官同意。但情況急迫者不在此限。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>前項但書情形，綜理國家情報工作機關應即將通訊監察書核發情形，通知綜理國家情報工作機關所在地之高等法院之專責法官補行同意；其未在四十八小時內獲得同意者，應即停止監察。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="7">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、刪除原條文第四項。</p><p>二、將違反本法所得之監察資料其法律效果專條明訂，新增本法第十八條之一，毋庸於個別條文規定，以免失之瑣碎。</p><p>三、配合本法體例調整，將違反本法執行通訊監察之效力移於第十八條第三項規範，毋庸於個別條文中規定，以免失之瑣碎。</p></div>
+</div>
+<button class="history-toggle" data-article="7" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="7">
+  <div class="history-entry">
+    <div class="history-entry-header">96年6月15日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>為避免國家安全遭受危害，而有監察下列通訊，以蒐集外國勢力或境外敵對勢力情報之必要者，綜理國家情報工作機關首長得核發通訊監察書。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>一、外國勢力、境外敵對勢力或其工作人員在境內之通訊。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>二、外國勢力、境外敵對勢力或其工作人員跨境之通訊。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>三、外國勢力、境外敵對勢力或其工作人員在境外之通訊。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項各款通訊之受監察人在境內設有戶籍者，其通訊監察書之核發，應先經綜理國家情報工作機關所在地之高等法院專責法官同意。但情況急迫者不在此限。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>前項但書情形，綜理國家情報工作機關應即將通訊監察書核發情形，通知綜理國家情報工作機關所在地之高等法院之專責法官補行同意；其未在四十八小時內獲得同意者，應即停止監察。</span></p>
+<p class="history-clause"><span class="history-clause-num">4</span><span>違反前二項規定進行監聽行為所取得之內容或所衍生之證據，於司法偵查、審判或其他程序中，均不得採為證據。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、94年2月5日通過之「國家情報工作法」規定：國家情報工作包含情報教育中的情報工作與反情報工作，亦即安全工作；為此，將修正案中所有「綜理國家安全情報工作機關」等文句中之「安全」二字刪除，以配合該法之規定。</p><p>二、通訊監察書之核發權修正為聲請法院裁定後為之，原第二項「前項『第一款或第二款』…」修正為：「前項『各款』…」；並將「…其通訊監察書之核發，應先經最高法院檢察署之檢察官同意。…」修正為：「…其通訊監察書之核發，應先經綜理國家情報工作機關所在地之高等法院專責法官同意。」。</p><p>三、原第三項「前項但書情形，綜理國家安全情報工作機關應即將通訊監察書核發情形，通知最高法院檢察署之檢察官補行同意；其未在二十四小時內獲得同意者，應即停止監察。」修正為：「…通知綜理國家情報工作機關所在地之高等法院之專責法官補行同意；」，並將原規定之「二十四小時」修正為：「四十八小時」。</p><p>四、違法取得之證據不得作為犯罪之證據，故有明文規定之必要，增訂第四項「違反前二項規定進行監聽行為所取得之內容或所衍生之證據，於司法偵查、審判或其他程序中，均不得採為證據。」。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>為避免國家安全遭受危害，而有監察下列通訊，以蒐集外國勢力或境外敵對勢力情報之必要者，綜理國家安全情報工作機關首長得核發通訊監察書。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>一、外國勢力、境外敵對勢力或其工作人員在境內之通訊。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>二、外國勢力、境外敵對勢力或其工作人員跨境之通訊。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>三、外國勢力、境外敵對勢力或其工作人員在境外之通訊。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項第一款或第二款通訊之一方在境內設有戶籍者，其通訊監察書之核發，應先經最高法院檢察署之檢察官同意。但情況急迫者不在此限。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>前項但書情形，綜理國家安全情報工作機關應即將通訊監察書核發情形，通知最高法院檢察署之檢察官補行同意；其未在二十四小時內獲得同意者，應即停止監察。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="8">
+  <div class="article-header">
+    <div class="article-num">第 8 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>前條第一項所稱外國勢力或境外敵對勢力如下：</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>一、外國政府、外國或境外政治實體或其所屬機關或代表機構。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二、由外國政府、外國或境外政治實體指揮或控制之組織。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>三、以從事國際或跨境恐怖活動為宗旨之組織。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="8">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="9">
+  <div class="article-header">
+    <div class="article-num">第 9 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>第七條第一項所稱外國勢力或境外敵對勢力工作人員如下：</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>一、為外國勢力或境外敵對勢力從事秘密情報蒐集活動或其他秘密情報活動，而有危害國家安全之虞，或教唆或幫助他人為之者。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二、為外國勢力或境外敵對勢力從事破壞行為或國際或跨境恐怖活動，或教唆或幫助他人為之者。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>三、擔任外國勢力或境外敵對勢力之官員或受僱人或國際恐怖組織之成員者。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="9">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="10">
+  <div class="article-header">
+    <div class="article-num">第 10 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>依第七條規定執行通訊監察所得資料，僅作為國家安全預警情報之用。但發現有第五條所定情事者，應將所得資料移送司法警察機關、司法機關或軍事審判機關依法處理。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="10">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="11">
+  <div class="article-header">
+    <div class="article-num">第 11 條</div>
+    <div class="article-date">96年6月15日修正，96年7月11日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>通訊監察書應記載下列事項：</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>一、案由及涉嫌觸犯之法條。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二、監察對象。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>三、監察通訊種類及號碼等足資識別之特徵。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>四、受監察處所。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>五、監察理由。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>六、監察期間及方法。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>七、聲請機關。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>八、執行機關。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>九、建置機關。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>前項第八款之執行機關，指蒐集通訊內容之機關。第九款之建置機關，指單純提供通訊監察軟硬體設備而未接觸通訊內容之機關。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>核發通訊監察書之程序，不公開之。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="11">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、第一項第四款之監察處所，應係指受監察之處所，爰予修正。</p><p>二、鑒於實務上對「執行機關」、實際進行執行通訊監察之處所及「建置機關」常發生混淆，致通訊監察書或通訊監察聲請書之記載用語不一，極為紊亂，爰增列第一項第九款「建置機關」及第二項有關執行機關、建置機關內涵之規定。</p><p>三、通訊監察係秘密蒐證之方法首重隱密，爰增列第三項之規定。</p></div>
+</div>
+<button class="history-toggle" data-article="11" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="11">
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause no-num"><span class="history-clause-num"></span><span>通訊監察書應記載下列事項：</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>一、案由及涉嫌觸犯之法條。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>二、監察對象。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>三、監察通訊種類及號碼等足資識別之特徵。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>四、監察處所。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>五、監察理由。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>六、監察期間及方法。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>七、聲請機關。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>八、執行機關。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="11_z一">
+  <div class="article-header">
+    <div class="article-num">第 11 之 1 條</div>
+    <div class="article-date">113年7月12日修正，113年7月31日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>檢察官、司法警察官為偵查犯罪及蒐集證據，有事實足認通訊使用者資料於本案之偵查有必要性及關連性時，得調取之。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>檢察官為偵查犯罪及蒐集證據，有事實足認通信紀錄或網路流量紀錄於本案之偵查有必要性及關連性時，除有急迫情形不及事先聲請者外，應以書面聲請該管法院核發調取票。聲請書之應記載事項，準用前條第一項之規定。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>司法警察官為調查犯罪及蒐集證據，有事實足認通信紀錄或網路流量紀錄於本案之調查有必要性及關連性時，得依前項規定，報請檢察官許可後，向該管法院聲請核發調取票。</span></p>
+<p class="clause"><span class="clause-num">4</span><span>檢察官、司法警察官為偵辦最輕本刑十年以上有期徒刑之罪、強盜、搶奪、詐欺、恐嚇、擄人勒贖、妨害電腦使用、脫逃，及違反人口販運防制法、槍砲彈藥刀械管制條例、懲治走私條例、毒品危害防制條例、組織犯罪防制條例、廢棄物清理法、兒童及少年性剝削防制條例、洗錢防制法、國家安全法、反滲透法、總統副總統選舉罷免法、公職人員選舉罷免法、農會法第四十七條之一至第四十七條之三、漁會法第五十條之一至第五十條之三等罪，有事實足認通信紀錄或網路流量紀錄於本案之偵查有必要性及關連性時，得由檢察官依職權或司法警察官經檢察官許可後，調取通信紀錄或網路流量紀錄，不受前二項之限制。</span></p>
+<p class="clause"><span class="clause-num">5</span><span>依第二項急迫情形調取通信紀錄或網路流量紀錄後，應於二十四小時內向法院補行聲請調取票。</span></p>
+<p class="clause"><span class="clause-num">6</span><span>調取票，應記載下列事項：</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>一、案由。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二、應調取之通信紀錄或網路流量紀錄。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>三、有效期間，逾期不得執行調取及調取後應將調取票交回之意旨。</span></p>
+<p class="clause"><span class="clause-num">7</span><span>第二項、第三項及第五項之聲請經法院駁回者，不得聲明不服。</span></p>
+<p class="clause"><span class="clause-num">8</span><span>核發調取票之程序，不公開之。</span></p>
+<p class="clause"><span class="clause-num">9</span><span>有調取第七條之監察對象通信紀錄、網路流量紀錄或通訊使用者資料必要者，由綜理國家情報工作機關向電信事業、設置公眾電信網路者或郵政事業調取，不受前八項之限制。</span></p>
+<p class="clause"><span class="clause-num">10</span><span>檢察官、司法警察官為偵查犯罪及蒐集證據，經用戶或電信使用人同意，得調取其通訊使用者資料、通信紀錄或網路流量紀錄，不受第一項至第八項之限制。</span></p>
+<p class="clause"><span class="clause-num">11</span><span>通訊使用者資料調取之程序、資料保存、銷燬、監督、稽核等相關事項之辦法，由法務部會同內政部並會商相關機關定之。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="11_z一">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、通訊使用者資料係電信使用人姓名或名稱、身分證明文件字號、地址、電信號碼及申請各項電信服務所填列之資料，性質上屬於個人資料保護法第二條第一款所規範之「個人資料」，所涉及隱私程度較低，與通訊之有無、對象、時間、方式及內容等事項無涉，非屬司法院釋字第六三一號解釋對於秘密通訊自由之涵攝範圍，調取通訊使用者資料對於隱私權之影響較為輕微，與通信紀錄涉及電信使用人與他人聯絡狀況、使用通訊之型態及所在位置等資訊，所涉隱私程度有所不同。為提升偵查效率，爰將第一項通信使用者資料調取之規定修正為檢察官、司法警察官得依職權調取，並配合修正條文第三條之一，修正用語為「通訊使用者資料」。</p><p>二、原第一項有關調取通信紀錄之規定移列第二項，並刪除「最重本刑三年以上有期徒刑之罪」要件限制。</p><p>三、原第二項移列第三項。</p><p>四、原第三項移列第四項，增列妨害電腦使用、脫逃及多項違法犯罪類型。</p><p>五、依修正條文第二項急迫情形調取通信紀錄或網路流量紀錄後，向法院補行聲請調取票之期限應予明確規定，爰修正原第四項規定，並移列為第五項。</p><p>六、第六項至第九項配合移列及文字修正。</p><p>七、如經用戶或電信使用人同意而調取其通訊使用者資料、通信紀錄，無礙其個人資訊自決權或秘密通訊自由之保障，爰增訂第十項規定。</p><p>八、增訂調取「網路流量紀錄」之規定，比照調取通信紀錄之程序，增訂調取網路流量紀錄之規定。</p><p>九、為加強對執法機關調取通訊使用者資料之監督管理，爰增訂第十一項，就通訊使用者資料調取之程序、資料保存、銷燬、監督、稽核等相關事項，授權另定辦法規範之。</p></div>
+</div>
+<button class="history-toggle" data-article="11_z一" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="11_z一">
+  <div class="history-entry">
+    <div class="history-entry-header">103年1月14日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>檢察官偵查最重本刑三年以上有期徒刑之罪，有事實足認通信紀錄及通信使用者資料於本案之偵查有必要性及關連性時，除有急迫情形不及事先聲請者外，應以書面聲請該管法院核發調取票。聲請書之應記載事項，準用前條第一項之規定。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>司法警察官因調查犯罪嫌疑人犯罪情形及蒐集證據，認有調取通信紀錄之必要時，得依前項規定，報請檢察官許可後，向該管法院聲請核發調取票。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>檢察官、司法警察官為偵辦最輕本刑十年以上有期徒刑之罪、強盜、搶奪、詐欺、恐嚇、擄人勒贖，及違反人口販運防制法、槍砲彈藥刀械管制條例、懲治走私條例、毒品危害防制條例、組織犯罪防制條例等罪，而有需要時，得由檢察官依職權或司法警察官向檢察官聲請同意後，調取通信紀錄，不受前二項之限制。</span></p>
+<p class="history-clause"><span class="history-clause-num">4</span><span>第一項之急迫原因消滅後，應向法院補行聲請調取票。</span></p>
+<p class="history-clause"><span class="history-clause-num">5</span><span>調取票，應記載下列事項：</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>一、案由。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>二、應調取之通信紀錄或使用者資料。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>三、有效期間，逾期不得執行調取及調取後應將調取票交回之意旨。</span></p>
+<p class="history-clause"><span class="history-clause-num">6</span><span>第一項、第二項及第四項之聲請經法院駁回者，不得聲明不服。</span></p>
+<p class="history-clause"><span class="history-clause-num">7</span><span>核發調取票之程序，不公開之。</span></p>
+<p class="history-clause"><span class="history-clause-num">8</span><span>有調取第七條之監察對象通信紀錄及通訊使用者資料必要者，由綜理國家情報工作機關向電信或郵政事業調取，不受前七項之限制。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>依協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="12">
+  <div class="article-header">
+    <div class="article-num">第 12 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>第五條、第六條之通訊監察期間，每次不得逾三十日，第七條之通訊監察期間，每次不得逾一年；其有繼續監察之必要者，應釋明具體理由，至遲於期間屆滿之二日前，提出聲請。但第五條、第六條繼續之監察期間，不得逾一年，執行機關如有繼續監察之必要者，應依第五條、第六條重行聲請。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>第五條、第六條之通訊監察期間屆滿前，偵查中檢察官、審判中法官認已無監察之必要者，應即停止監察。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>第七條之通訊監察期間屆滿前，綜理國家情報工作機關首長認已無監察之必要者，應即停止監察。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="12">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>依協商條文通過。</p></div>
+</div>
+<button class="history-toggle" data-article="12" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="12">
+  <div class="history-entry">
+    <div class="history-entry-header">96年6月15日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>第五條、第六條之通訊監察期間，每次不得逾三十日，第七條之通訊監察期間，每次不得逾一年；其有繼續監察之必要者，應附具體理由，至遲於期間屆滿之二日前，提出聲請。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>第五條、第六條之通訊監察期間屆滿前，偵查中檢察官、審判中法官認已無監察之必要者，應即停止監察。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>第七條之通訊監察期間屆滿前，綜理國家情報工作機關首長認已無監察之必要者，應即停止監察。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、為有效保障受監察人權益，並使法官有合理時間審酌通訊監察期間屆滿後有無繼續監察必要，爰參考刑事訴訟法第一百零八條第一項之立法例修正第一項，明定聲請繼續監察，應附具體理由，至遲於期間屆滿之二日前，重新聲請。</p><p>二、偵查或審判中之通訊監察有無停止之必要，偵查主體之檢察官或審理案件之法官知之甚詳，且停止監察並無侵害人權之虞，故第五條、第六條之通訊監察期間屆滿前，偵查中即得由檢察官、審判中由法官停止監察，爰修正第二項。至第七條之通訊監察期間屆滿前之停止監察，則由綜理國家情報工作機關首長為之，乃增訂第三項。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>第五條之通訊監察期間，每次不得逾三十日，第七條之通訊監察期間，每次不得逾一年；其有繼續監察之必要者，得於期間屆滿前，重新聲請。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項期間屆滿前，已無監察之必要者，應即停止監察。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="13">
+  <div class="article-header">
+    <div class="article-num">第 13 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>通訊監察以截收、監聽、錄音、錄影、攝影、開拆、檢查、影印或其他類似之必要方法為之。但不得於私人住宅裝置竊聽器、錄影設備或其他監察器材。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>執行通訊監察，除經依法處置者外，應維持通訊暢通。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>執行機關除有正當理由者外，應至少每三日派員取回監錄內容。</span></p>
+<p class="clause"><span class="clause-num">4</span><span>前項監錄內容顯然與監察目的無關者，不得作成譯文。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="13">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、原條文第一項及第二項未修正。</p><p>二、增訂第三項，明定執行機關除有正當理由者外，應至少每三日派員取回監錄內容。</p><p>三、增訂第四項，明定前項監錄內容顯然與監察目的無關者，不得作成譯文。</p></div>
+</div>
+<button class="history-toggle" data-article="13" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="13">
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>監察通訊以截收、監聽、錄音、錄影、攝影、開拆、檢查、影印或其他類似之必要方法為之。但不得於私人住宅裝置竊聽器、錄影設備或其他監察器材。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>執行通訊監察，除經依法處置者外，應維持通訊暢通。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="14">
+  <div class="article-header">
+    <div class="article-num">第 14 條</div>
+    <div class="article-date">113年7月12日修正，113年7月31日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>通訊監察之執行機關及處所，得依聲請機關之聲請定之。法官依職權核發通訊監察書時，由核發人指定之；依第七條規定核發時，亦同。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>電信事業、設置公眾電信網路者及郵政事業有協助執行通訊監察之義務；其協助內容為執行機關得使用該事業之通訊監察相關設施與其人員之協助。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>前項因協助執行通訊監察所生之必要費用，於執行後，得請求執行機關支付；其項目及費額由目的事業主管機關會商有關機關訂定公告之。</span></p>
+<p class="clause"><span class="clause-num">4</span><span>電信事業及設置公眾電信網路者經通訊監察之建置機關指定者，其通訊系統應具有配合執行監察之功能，並負有協助建置機關建置、維持通訊監察系統之義務。但以符合建置時之科技及經濟上合理性為限，並不得逾越期待可能性。</span></p>
+<p class="clause"><span class="clause-num">5</span><span>前項協助建置通訊監察系統所生之必要費用，由建置機關負擔。另因協助維持通訊監察功能正常作業所生之必要費用，由目的事業主管機關會商有關機關訂定公告之。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="14">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、第一項未修正。</p><p>二、電信管理法第九條第四項規定電信事業及設置公眾電信網路者有依本法協助執行通訊監察之義務，爰修正第二項，將設置公眾電信網路者納入具有協助執行通訊監察義務之主體。</p><p>三、依機關組織法規管轄及業務權責，電信事業之目的事業主管機關為國家通訊傳播委員會，郵政事業之目的事業主管機關為交通部，為期明確，爰將第三項及第五項之交通部修正為目的事業主管機關。</p><p>四、電信管理法第二十二條第二項規定，設置公眾電信網路者經通訊監察之建置機關指定者，其電信網路應依本法具有配合執行監察之功能，並負有協助建置與維持通訊監察系統之義務，爰配合修正第四項規定。</p></div>
+</div>
+<button class="history-toggle" data-article="14" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="14">
+  <div class="history-entry">
+    <div class="history-entry-header">96年6月15日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>通訊監察之執行機關及處所，得依聲請機關之聲請定之。法官依職權核發通訊監察書時，由核發人指定之；依第七條規定核發時，亦同。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>電信事業及郵政事業有協助執行通訊監察之義務；其協助內容為執行機關得使用該事業之通訊監察相關設施與其人員之協助。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>前項因協助執行通訊監察所生之必要費用，於執行後，得請求執行機關支付；其項目及費額由交通部會商有關機關訂定公告之。</span></p>
+<p class="history-clause"><span class="history-clause-num">4</span><span>電信事業之通訊系統應具有配合執行監察之功能，並負有協助建置機關建置、維持通訊監察系統之義務。但以符合建置時之科技及經濟上合理性為限，並不得逾越期待可能性。</span></p>
+<p class="history-clause"><span class="history-clause-num">5</span><span>前項協助建置通訊監察系統所生之必要費用，由建置機關負擔。另因協助維持通訊監察功能正常作業所生之必要費用，由交通部會商有關機關訂定公告之。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、為配合第五條有關通訊監察書由檢察官轉給法官之修正，爰刪除第一項之「或檢察官」。</p><p>二、郵政總局現已改制為中華郵政股份有限公司，爰將第二項之「郵政機關（構）」之用語，改為「郵政事業」。</p><p>三、為達成通訊監察所追求之治安公益，電信與郵政事業應負有協助執行通訊監察之義務。又為使該協助執行之義務明確化，爰於第二項後段增列協助執行義務之內容為「執行機關得使用該事業之通訊監察相關設施與其人員之協助。」</p><p>四、電信與郵政事業雖應協助執行通訊監察，但其因協助執行通訊監察所生設備使用與配合之人力成本等必要費用，該事業應得請求執行機關支付，以資衡平。又因該必要費用應支付之項目與標準，較為瑣碎，基於明確化之要求，故其項目及費額由交通部會商有關機關訂定公告之。</p><p>五、除協助執行通訊監察之義務外，電信事業另應負有協助建置機關建置、維持通訊監察系統之義務，且其通訊系統應具有配合執行監察之功能，爰將該義務內容增列於第四項。但基於人民工作及營業自由基本權之保障，為避免電信業者因過苛之協助通訊監察義務，而阻礙電信資訊科技之發展，所以，電信業者關於建置與維持通訊監察設備之義務，應以「符合建置時之科技及經濟上合理性為限，並不得逾越期待可能性」作為義務之界線，爰於第四項增列但書規定，以合理限縮電信業者之義務範圍。</p><p>六、電信事業協助建置通訊監察系統所生之必要費用，應由建置機關負擔。至於因協助維持通訊監察功能正常作業所生之必要費用，由於應支付之項目及費額標準，較為瑣碎，基於明確化之要求，故由交通部會商有關機關訂定公告之。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>通訊監察之執行機關及處所，得依聲請機關之聲請定之。法官或檢察官依職權核發通訊監察書時，由核發人指定之；依第七條規定核發時，亦同。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>電信事業及郵政機關（構）有協助執行通訊監察之義務，其通訊系統應具有配合執行監察之功能。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>協助執行通訊監察之電信事業、郵政機關（構）於執行後，得請求執行機關支付必要之費用。其費額由交通部會同內政部、國防部及法務部定之。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="14_z一">
+  <div class="article-header">
+    <div class="article-num">第 14 之 1 條</div>
+    <div class="article-date">113年7月12日修正，113年7月31日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>電信事業及設置公眾電信網路者，有保存及協助執行調取通訊使用者資料、通信紀錄之義務。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>電信事業及設置公眾電信網路者經通訊監察之建置機關指定者，有保存及協助執行調取網路流量紀錄之義務。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>電信事業及設置公眾電信網路者因協助執行調取前二項資料或紀錄所生之必要費用，於執行後，得請求執行機關支付。</span></p>
+<p class="clause"><span class="clause-num">4</span><span>電信事業及設置公眾電信網路者經通訊監察之建置機關指定者，其通訊或網路系統，應具有保存及執行調取網路流量紀錄之功能，並以公眾電信網路性能可予提供者為限。</span></p>
+<p class="clause"><span class="clause-num">5</span><span>電信事業及設置公眾電信網路者經通訊監察之建置機關指定者，為建置保存網路流量紀錄之系統與維持保存及執行調取網路流量紀錄功能正常作業所生之必要費用，由建置機關負擔。</span></p>
+<p class="clause"><span class="clause-num">6</span><span>網路流量紀錄系統之設置方式、保存方式、保存期間、查詢之作業程序、調取之項目、監督、費額及其他相關事項之辦法，由法務部會同內政部並會商國家通訊傳播委員會及相關機關定之。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="14_z一">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、本條新增。</p><p>二、電信管理法第九條第四項已規定電信事業及設置公眾電信網路者有依本法協助調取通訊使用者資料及通信紀錄之義務，爰為第一項規定。</p><p>三、考量設置公眾電信網路者規模不一，而保存網路流量紀錄所涉系統建置、費用、設備及技術較複雜，爰增訂第二項及第四項，限制具有保存及協助執行調取網路流量紀錄義務之業者範圍，並限制其系統功能應以公眾電信網路性能可予提供者為限，以免對負有保存義務者造成不合理負擔。</p><p>四、電信事業及設置公眾電信網路者雖有保存及協助調取第一項及第二項資料或紀錄之義務，惟協助調取時所生之設備使用或人力成本等必要費用，應得請求執行機關支付，以資衡平，爰增訂第三項。</p><p>五、因保存及調取網路流量紀錄需另行建置系統，就該系統建置與後續維護所生之必要費用，應由建置機關負擔，爰增訂第五項。</p><p>六、有關網路流量紀錄相關設置、保存或調取等細節事項，涉及相關機關主管事項，爰於第六項規定訂定授權辦法之主責機關及會商程序。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="15">
+  <div class="article-header">
+    <div class="article-num">第 15 條</div>
+    <div class="article-date">113年7月12日修正，113年7月31日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>第五條、第六條及第七條第二項通訊監察案件之執行機關於監察通訊結束時，應即敘明受監察人之姓名、住所或居所、該監察案件之第十一條第一項各款及通訊監察書核發機關文號、實際監察期間、有無獲得監察目的之通訊資料及救濟程序報由檢察官、綜理國家情報工作機關陳報法院通知受監察人。如認通知有妨害監察目的之虞或不能通知者，應一併陳報。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>通訊監察結束後，檢察官、綜理國家情報工作機關逾一個月仍未為前項之陳報者，法院應於十四日內主動通知受監察人。但不能通知者，不在此限。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>法院對於第一項陳報，除有具體理由足認通知有妨害監察目的之虞或不能通知之情形外，應通知受監察人。</span></p>
+<p class="clause"><span class="clause-num">4</span><span>前項不通知之原因消滅後，執行機關應報由檢察官、綜理國家情報工作機關陳報法院補行通知。原因未消滅者，應於前項陳報後每三個月向法院補行陳報未消滅之情形。逾期未陳報者，法院應於十四日內主動通知受監察人。</span></p>
+<p class="clause"><span class="clause-num">5</span><span>關於執行機關陳報事項經法院審查後，交由司法事務官通知受監察人與該受監察之電信服務用戶。但不能通知者，不在此限。</span></p>
+<p class="clause"><span class="clause-num">6</span><span>前項受監察之電信服務用戶包括個人、機關（構）、或團體等。</span></p>
+<p class="clause"><span class="clause-num">7</span><span>前六項規定，於依本法規定調取他人網路流量紀錄之情形，亦準用之。但實施第十一條之一第四項調取網路流量紀錄之情形，應由執行機關通知。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="15">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、增列第七項，調取他人網路流量紀錄之情形，應通知受監察人。</p><p>二、鑑於對人民隱私權之保障，避免受監察人無所得知被監察情況，導致在實然面上不可能進行救濟，因此明定對於網路流量紀錄之調取，執行機關有義務通知被調取人。</p></div>
+</div>
+<button class="history-toggle" data-article="15" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="15">
+  <div class="history-entry">
+    <div class="history-entry-header">103年1月14日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>第五條、第六條及第七條第二項通訊監察案件之執行機關於監察通訊結束時，應即敘明受監察人之姓名、住所或居所、該監察案件之第十一條第一項各款及通訊監察書核發機關文號、實際監察期間、有無獲得監察目的之通訊資料及救濟程序報由檢察官、綜理國家情報工作機關陳報法院通知受監察人。如認通知有妨害監察目的之虞或不能通知者，應一併陳報。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>通訊監察結束後，檢察官、綜理國家情報工作機關逾一個月仍未為前項之陳報者，法院應於十四日內主動通知受監察人。但不能通知者，不在此限。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>法院對於第一項陳報，除有具體理由足認通知有妨害監察目的之虞或不能通知之情形外，應通知受監察人。</span></p>
+<p class="history-clause"><span class="history-clause-num">4</span><span>前項不通知之原因消滅後，執行機關應報由檢察官、綜理國家情報工作機關陳報法院補行通知。原因未消滅者，應於前項陳報後每三個月向法院補行陳報未消滅之情形。逾期未陳報者，法院應於十四日內主動通知受監察人。</span></p>
+<p class="history-clause"><span class="history-clause-num">5</span><span>關於執行機關陳報事項經法院審查後，交由司法事務官通知受監察人與該受監察之電信服務用戶。但不能通知者，不在此限。</span></p>
+<p class="history-clause"><span class="history-clause-num">6</span><span>前項受監察之電信服務用戶包括個人、機關（構）、或團體等。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>依協商條文通過。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">96年6月15日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>第五條、第六條及第七條第二項通訊監察案件之執行機關於監察通訊結束時，應即敘明受監察人之姓名、住所或居所報由檢察官、綜理國家情報工作機關陳報法院通知受監察人。如認通知有妨害監察目的之虞或不能通知者，應一併陳報。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>法院對於前項陳報，除認通知有妨害監察目的之虞或不能通知之情形外，應通知受監察人。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>前項不通知之原因消滅後，執行機關應報由檢察官、綜理國家情報工作機關陳報法院補行通知。</span></p>
+<p class="history-clause"><span class="history-clause-num">4</span><span>關於執行機關陳報事項經法院審查後，交由司法事務官通知受監察人。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、雖然偵查中通訊監察書改由法官核發，惟因檢察官為偵查主體，偵查中通訊監察結束之通知，是否有妨害監察目的之虞，自以檢察官較為熟悉，為免影響偵查，仍由檢察官作初步審核；蒐集情報之通訊監察，係屬國家情報機關之職掌，為免影響情報蒐集，自應由該機關首長作初步審核，均不宜由通訊監察書核發人審核。但決定不通知時，仍應經核發通訊監察書或接辦該職務之法官許可，爰修正第一項。</p><p>二、不通知之原因消滅後，執行機關擬補行通知時，仍應依第一項程序辦理，爰修正第二項。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>執行機關於監察通訊結束時，應即請通訊監察書核發人許可後，通知受監察人。但有妨害監察目的之虞或不能通知者，經通訊監察書核發人許可後，不在此限。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項但書不通知之原因消滅後，應即補行通知。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="16">
+  <div class="article-header">
+    <div class="article-num">第 16 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>執行機關於監察通訊後，應按月向檢察官、核發通訊監察書之法官或綜理國家情報工作機關首長報告執行情形。檢察官、核發通訊監察書之法官或綜理國家情報工作機關首長並得隨時命執行機關提出報告。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>第五條、第六條通訊監察之監督，偵查中由檢察機關、審判中由法院，第七條通訊監察之監督，由綜理國家情報工作機關，派員至建置機關，或使用電子監督設備，監督通訊監察執行情形。偵查中案件，法院應定期派員監督執行機關執行情形。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="16">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、修正原條文第一項，將條文中「依職權」等字刪除。</p><p>二、法院執行其審查權、監控權，得加強其實質審查功能，應定期派員至執行機關監督通訊監察執行之情形，爰修正原條文第二項。</p></div>
+</div>
+<button class="history-toggle" data-article="16" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="16">
+  <div class="history-entry">
+    <div class="history-entry-header">96年6月15日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>執行機關於監察通訊後，應按月向檢察官、依職權核發通訊監察書之法官或綜理國家情報工作機關首長報告執行情形。檢察官、依職權核發通訊監察書之法官或綜理國家情報工作機關首長並得隨時命執行機關提出報告。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>第五條、第六條通訊監察之監督，偵查中由檢察機關、審判中由法院，第七條通訊監察之監督，由綜理國家情報工作機關，派員至建置機關，或使用電子監督設備，監督通訊監察執行情形。偵查中案件，法院得隨時派員監督執行機關執行情形。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>執行機關於監察通訊後，應按月向通訊監察書核發人報告執行情形。通訊監察書核發人並得隨時命執行機關提出報告。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>通訊監察書核發機關應派員至執行處所，監督通訊監察執行情形。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="16_z一">
+  <div class="article-header">
+    <div class="article-num">第 16 之 1 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>通訊監察執行機關、監督機關每年應製作該年度通訊監察之相關統計資料年報，定期上網公告並送立法院備查。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>前項定期上網公告，於第七條規定之通訊監察，不適用之。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>第一項統計資料年報應包含下列事項：</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>一、依第五條、第六條、第七條及第十二條第一項聲請及核准通訊監察之案由、監察對象數、案件數、線路數及線路種類。依第十一條之一之調取案件，亦同。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二、依第十二條第二項、第三項之停止監察案件，其停止情形。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>三、依第十五條之通知或不通知、不通知之原因種類及原因消滅或不消滅之情形。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>四、法院依前條規定監督執行機關執行之情形。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>五、依第十七條資料銷燬之執行情形。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>六、截聽紀錄之種類及數量。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="16_z一">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、本條新增。</p><p>二、依協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="17">
+  <div class="article-header">
+    <div class="article-num">第 17 條</div>
+    <div class="article-date">96年6月15日修正，96年7月11日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>監察通訊所得資料，應加封緘或其他標識，由執行機關蓋印，保存完整真實，不得增、刪、變更，除已供案件證據之用留存於該案卷或為監察目的有必要長期留存者外，由執行機關於監察通訊結束後，保存五年，逾期予以銷燬。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>通訊監察所得資料全部與監察目的無關者，執行機關應即報請檢察官、依職權核發通訊監察書之法官或綜理國家情報工作機關首長許可後銷燬之。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>前二項之資料銷燬時，執行機關應記錄該通訊監察事實，並報請檢察官、依職權核發通訊監察書之法官或綜理國家情報工作機關首長派員在場。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="17">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、為正確判斷通訊監察所得資料與監察目的有無關聯，爰修正第二項。</p><p>二、執行機關銷燬通訊監察所得資料，係屬一般行政事項，與偵查、審判事務無直接關聯，爰修正第三項。</p></div>
+</div>
+<button class="history-toggle" data-article="17" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="17">
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>監察通訊所得資料，應加封緘或其他標識，由執行機關蓋印，保存完整真實，不得增、刪、變更，除已供案件證據之用留存於該案卷或為監察目的有必要長期留存者外，由執行機關於監察通訊結束後，保存五年，逾期予以銷燬。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>監察通訊所得資料全部與監察目的無關者，執行機關應即報請通訊監察書核發人許可後銷燬之。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>前二項之資料銷燬時，執行機關應記錄該通訊監察事實，並報請通訊監察書核發人派員在場。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="18">
+  <div class="article-header">
+    <div class="article-num">第 18 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>依本法監察通訊所得資料，不得提供與其他機關（構）、團體或個人。但符合第五條或第七條規定之監察目的或其他法律另有規定者，不在此限。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>依第五條及第六條規定通訊監察書之聲請、核發、執行、通訊監察所得資料之保管、使用、銷燬，應就其經辦、調閱及接觸者，建立連續流程履歷紀錄，並應與臺灣高等法院通訊監察管理系統連線。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>前項其他執行通訊監察之機關每月應將所有截聽紀錄以專線或保密方式傳遞至臺灣高等法院通訊監察管理系統。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="18">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、原條文第一項但書，於「但符合第五條或第七條」後增加「規定」二字，以臻完備。</p><p>二、通訊內容以外之通訊相關資料，仍屬憲法第十二條人民秘密通訊自由之保障範圍，釋字第631號解釋已釋明。並為證明犯罪之重要關鍵證據，為保持證據之清潔性不致遭到不當之污染，其經辦、調閱及接觸者，應建立「連續流程履歷紀錄」，並應與臺灣高等法院通訊監察管理系統（參見本法施行細則第二十條）連線，爰增訂第二項。</p><p>三、增訂第三項，明定「前項其他執行通訊監察之機關每月應將所有截聽紀錄以專線或保密方式傳遞至臺灣高等法院通訊監察管理系統。」。</p></div>
+</div>
+<button class="history-toggle" data-article="18" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="18">
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause no-num"><span class="history-clause-num"></span><span>依本法監察通訊所得資料，不得提供與其他機關（構）、團體或個人。但符合第五條或第七條之監察目的或其他法律另有規定者，不在此限。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="18_z一">
+  <div class="article-header">
+    <div class="article-num">第 18 之 1 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>依第五條、第六條或第七條規定執行通訊監察，取得其他案件之內容者，不得作為證據。但於發現後七日內補行陳報法院，並經法院審查認可該案件與實施通訊監察之案件具有關連性或為第五條第一項所列各款之罪者，不在此限。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>依第五條、第六條或第七條規定執行通訊監察所取得之內容或所衍生之證據與監察目的無關者，不得作為司法偵查、審判、其他程序之證據或其他用途，並依第十七條第二項規定予以銷燬。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>違反第五條、第六條或第七條規定進行監聽行為所取得之內容或所衍生之證據，於司法偵查、審判或其他程序中，均不得採為證據或其他用途，並依第十七條第二項規定予以銷燬。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="18_z一">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、本條新增。</p><p>二、為保障人權，第一項明定「依第五條、第六條或第七條規定執行通訊監察，取得其他案件之內容者，不得作為證據。但於發現後七日內補行陳報法院，並經法院審查認可該案件與實施通訊監察之案件具有關連性或為第五條第一項所列各款之罪者，不在此限。」。</p><p>三、第二項明定「依第五條、第六條或第七條規定執行通訊監察所取得之內容或所衍生之證據與監察目的無關者，不得作為司法偵查、審判、其他程序之證據或其他用途，並依第十七條第二項規定予以銷燬。」。</p><p>四、第三項明定「違反第五條、第六條或第七條規定進行監聽行為所取得之內容或所衍生之證據，於司法偵查、審判或其他程序中，均不得採為證據或其他用途，並依第十七條第二項規定予以銷燬。」。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="19">
+  <div class="article-header">
+    <div class="article-num">第 19 條</div>
+    <div class="article-date">113年7月12日修正，113年7月31日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>違反本法或其他法律之規定監察他人通訊或洩漏、提供、使用監察通訊所得之資料者，負損害賠償責任。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>被害人雖非財產上之損害，亦得請求賠償相當之金額；其名譽被侵害者，並得請求為回復名譽之適當處分。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>前項請求權，不得讓與或繼承。但以金額賠償之請求權已依契約承諾或已起訴者，不在此限。</span></p>
+<p class="clause"><span class="clause-num">4</span><span>前三項規定，於違反本法或其他法律之規定調取他人通訊使用者資料及網路流量紀錄之情形，亦準用之。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="19">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、增列第四項，違法調取他人通訊使用者資料及網路流量紀錄負損害賠償責任。</p><p>二、鑑於通訊使用者資料及網路流量紀錄為人民之秘密通訊自由，因此違法調取他人通訊使用者資料及網路流量紀錄應負損害賠償責任，以保障人民秘密通訊自由及隱私權不受非法侵害。</p></div>
+</div>
+<button class="history-toggle" data-article="19" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="19">
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>違反本法或其他法律之規定監察他人通訊或洩漏、提供、使用監察通訊所得之資料者，負損害賠償責任。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>被害人雖非財產上之損害，亦得請求賠償相當之金額；其名譽被侵害者，並得請求為回復名譽之適當處分。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>前項請求權，不得讓與或繼承。但以金額賠償之請求權已依契約承諾或已起訴者，不在此限。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="20">
+  <div class="article-header">
+    <div class="article-num">第 20 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>前條之損害賠償總額，按其監察通訊日數，以每一受監察人每日新臺幣一千元以上五千元以下計算。但能證明其所受之損害額高於該金額者，不在此限。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>前項監察通訊日數不明者，以三十日計算。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="20">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="21">
+  <div class="article-header">
+    <div class="article-num">第 21 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>損害賠償請求權，自請求權人知有損害及賠償義務人時起，因二年間不行使而消滅；自損害發生時起，逾五年者亦同。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="21">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="22">
+  <div class="article-header">
+    <div class="article-num">第 22 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>公務員或受委託行使公權力之人，執行職務時違反本法或其他法律之規定監察他人通訊或洩漏、提供、使用監察通訊所得之資料者，國家應負損害賠償責任。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>依前項規定請求國家賠償者，適用第十九條第二項、第三項及第二十條之規定。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="22">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="23">
+  <div class="article-header">
+    <div class="article-num">第 23 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>損害賠償除依本法規定外，適用民法及國家賠償法規定。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="23">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="24">
+  <div class="article-header">
+    <div class="article-num">第 24 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>違法監察他人通訊者，處五年以下有期徒刑。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>執行或協助執行通訊監察之公務員或從業人員，假借職務或業務上之權力、機會或方法，犯前項之罪者，處六月以上五年以下有期徒刑。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>意圖營利而犯前二項之罪者，處一年以上七年以下有期徒刑。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="24">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="25">
+  <div class="article-header">
+    <div class="article-num">第 25 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>明知為違法監察通訊所得之資料，而無故洩漏或交付之者，處三年以下有期徒刑。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>意圖營利而犯前項之罪者，處六月以上五年以下有期徒刑。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="25">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="26">
+  <div class="article-header">
+    <div class="article-num">第 26 條</div>
+    <div class="article-date">107年5月8日修正，107年5月23日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>（刪除）</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="26">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、本條刪除。</p><p>二、一百零四年十二月三十日修正施行刑法施行法第十條之三第二項規定，刑法修正施行日前制定之其他法律關於沒收、追徵、追繳、抵償之規定，不再適用。該規定立法意旨在於此次刑法既已整體修正沒收規定，自應回歸刑法一體適用，一百零五年七月一日刑法沒收修正之施行日前所制定之其他法律關於沒收之規定，已無獨立存在之必要；惟經檢視仍應另為特別規定者，依刑法第十一條特別法優於普通法之原則，仍宜定明。</p><p>三、依修正後刑法第三十八條第二項及第三項規定，供犯罪所用、犯罪預備之物或犯罪所生之物，屬於犯罪行為人者，得沒收之；屬於犯罪行為人以外之自然人、法人或非法人團體，而無正當理由提供或取得者，得沒收之。則原第一項規定，前二條違法監察通訊所得之資料，不問屬於犯人與否，均沒收之。其沒收範圍較刑法為大，惟違法監察通訊所得之資料所具社會危害性與違禁物有別，其沒收不應與違禁物為相同之處理，應回歸適用刑法之規定。</p><p>四、又依修正後刑法第四十條第三項規定，第三十八條第二項、第三項之物、第三十八條之一第一項、第二項之犯罪所得，因事實上或法律上原因未能追訴犯罪行為人之犯罪或判決有罪者，得單獨宣告沒收。則原第二項規定，犯人不明時，得單獨宣告沒收。其涉及得單獨宣告沒收之要件，應回歸適用刑法之規定，本條爰予刪除。</p></div>
+</div>
+<button class="history-toggle" data-article="26" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="26">
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>前二條違法監察通訊所得之資料，不問屬於犯人與否，均沒收之。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>犯人不明時，得單獨宣告沒收。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="27">
+  <div class="article-header">
+    <div class="article-num">第 27 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>公務員或曾任公務員之人因職務知悉或持有依本法或其他法律之規定監察通訊所得應秘密之資料，而無故洩漏或交付之者，處三年以下有期徒刑。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>法官或檢察官執行本法而有法官法第三十條第二項或第八十九條第四項各款情事者，應移送個案評鑑。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>公務員或曾任公務員之人違反第十八條之一第二項、第三項規定，將本案通訊監察資料挪作他用者，處三年以下有期徒刑。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="27">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、增訂第二項及第三項。</p><p>二、第二項明定「法官或檢察官執行本法而有法官法第三十條第二項或第八十九條第四項各款情事者，應移送個案評鑑。」。</p><p>三、公務員或曾任公務員之人均應恪守另案監聽資料應依本法第十七條第二項規定予以銷毀，及不得挪作他用之原則。爰增訂第三項違反者之罰則。</p></div>
+</div>
+<button class="history-toggle" data-article="27" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="27">
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause no-num"><span class="history-clause-num"></span><span>公務員或曾任公務員之人因職務知悉或持有依本法或其他法律之規定監察通訊所得應秘密之資料，而無故洩漏或交付之者，處三年以下有期徒刑。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="28">
+  <div class="article-header">
+    <div class="article-num">第 28 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>非公務員因職務或業務知悉或持有依本法或其他法律之規定監察通訊所得應秘密之資料，而無故洩漏或交付之者，處二年以下有期徒刑、拘役或新臺幣二萬元以下罰金。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="28">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="29">
+  <div class="article-header">
+    <div class="article-num">第 29 條</div>
+    <div class="article-date">113年7月12日修正，113年7月31日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>監察他人之通訊，而有下列情形之一者，不罰：</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>一、依法律規定而為。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>二、電信事業、設置公眾電信網路者或郵政事業人員基於提供公共電信、公眾電信網路或郵政服務之目的，而依有關法令執行。</span></p>
+<p class="clause no-num"><span class="clause-num"></span><span>三、監察者為通訊之一方或已得通訊之一方事先同意，而非出於不法目的。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="29">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>電信管理法及修正條文第十四條均規定設置公眾電信網路者有協助執行通訊監察之義務，並因應郵政總局改制為中華郵政股份有限公司，爰修正第二款規定；另各款文字酌作修正。</p></div>
+</div>
+<button class="history-toggle" data-article="29" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="29">
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause no-num"><span class="history-clause-num"></span><span>監察他人之通訊，而有下列情形之一者，不罰：</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>一、依法律規定而為者。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>二、電信事業或郵政機關（構）人員基於提供公共電信或郵政服務之目的，而依有關法令執行者。</span></p>
+<p class="history-clause no-num"><span class="history-clause-num"></span><span>三、監察者為通訊之一方或已得通訊之一方事先同意，而非出於不法目的者。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="30">
+  <div class="article-header">
+    <div class="article-num">第 30 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>第二十四條第一項、第二十五條第一項及第二十八條之罪，須告訴乃論。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="30">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="31">
+  <div class="article-header">
+    <div class="article-num">第 31 條</div>
+    <div class="article-date">113年7月12日修正，113年7月31日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>有協助執行通訊監察義務之電信事業、設置公眾電信網路者及郵政事業，違反第十四條第二項之規定者，由該管目的事業主管機關處以新臺幣五十萬元以上五百萬元以下罰鍰；經通知限期遵行而仍不遵行者，按次處罰。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>有保存及協助調取通訊使用者資料、通信紀錄或網路流量紀錄義務之電信事業及設置公眾電信網路者，違反第十四條之一第一項或第二項之規定者，亦同。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>對電信事業及設置公眾電信網路者之主管機關依本法所為之行政處分不服者，直接適用行政訴訟程序。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="31">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>照協商條文通過。</p></div>
+</div>
+<button class="history-toggle" data-article="31" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="31">
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause no-num"><span class="history-clause-num"></span><span>有協助執行通訊監察義務之電信事業及郵政機關（構），違反第十四條第二項之規定者，由交通部處以新臺幣五十萬元以上二百五十萬元以下罰鍰；經通知限期遵行而仍不遵行者，按日連續處罰，並得撤銷其特許或許可。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="32">
+  <div class="article-header">
+    <div class="article-num">第 32 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>軍事審判機關於偵查、審判現役軍人犯罪時，其通訊監察準用本法之規定。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="32">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、配合本法修正，立法技術上保留原條文第一項軍事審判機關於偵查、審判現役軍人犯罪時，其通訊監察準用本法之規定已足。</p><p>二、原條文第二項、第三項及第四項予以刪除。</p></div>
+</div>
+<button class="history-toggle" data-article="32" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="32">
+  <div class="history-entry">
+    <div class="history-entry-header">96年6月15日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>軍事審判機關於偵查、審判現役軍人犯罪時，其通訊監察準用本法之規定。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項通訊監察書於偵查現役軍人犯罪時，由軍事檢察官向該管軍事審判官聲請核發。軍事審判官並得於通訊監察書上，對執行人員為適當之指示。</span></p>
+<p class="history-clause"><span class="history-clause-num">3</span><span>執行機關應於執行監聽期間，至少作成一次以上之報告書，說明監聽行為之進行情形，以及有無繼續監聽之需要。軍事審判官依經驗法則、論理法則自由心證判斷後，發現有不應繼續執行監聽之情狀時，應撤銷原通訊監察書。</span></p>
+<p class="history-clause"><span class="history-clause-num">4</span><span>違反前三項規定進行監聽行為所取得之內容或所衍生之證據，於司法偵查、審判或其他程序中，均不得採為證據。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、本法第五條既將偵查中通訊監察書之核發權，修正由法院行使，故本條配合第五條之修正而調整，將軍事審判案件，偵查中通訊監察書之核發權，亦移由軍事法院行使。另增訂軍事審判官於行使通訊監察書時，對執行人員為適當指示之明文，俾能督促執行機關確實依法執行，避免侵害人權。</p><p>二、為落實人權保障，故增訂本條第三項之規定，使執行機關負應於通訊監察期間提出報告之義務，若發現無通訊監察之必要時，得由法院撤銷通訊監察書，儘早停止通訊監察，以維人權。</p><p>三、為使相關機關確實落實本法之規定，並確實保障人權，使執行機關不再有違法情事，故增訂本條第四項有關違法取得之內容，均不得作為證據之規定。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>軍事審判機關於偵查、審判現役軍人犯罪時，其通訊監察準用本法之規定。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>前項通訊監察書於偵查現役軍人犯罪時，由軍事檢察官核發，審判中由軍事審判官核發。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="32_z一">
+  <div class="article-header">
+    <div class="article-num">第 32 之 1 條</div>
+    <div class="article-date">103年1月14日修正，103年1月29日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause"><span class="clause-num">1</span><span>法務部每年應向立法院報告通訊監察執行情形。立法院於必要時，得請求法務部報告並調閱相關資料。</span></p>
+<p class="clause"><span class="clause-num">2</span><span>立法院得隨時派員至建置機關、電信事業、郵政事業或其他協助執行通訊監察之機關、事業及處所，或使用電子監督設備，監督通訊監察執行情形。</span></p>
+<p class="clause"><span class="clause-num">3</span><span>本法未規定者，依立法院職權行使法或其他法律之規定。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="32_z一">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>一、本條新增。</p><p>二、依協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="33">
+  <div class="article-header">
+    <div class="article-num">第 33 條</div>
+    <div class="article-date">88年6月22日制定，88年7月14日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>本法施行細則，由行政院會同司法院定之。</span></p>
+  </div>
+</div>
+<div class="reason-block reason-block-last" data-article="33">
+  <div class="reason-label">立法理由</div>
+  <div class="reason-text"><p>照黨團協商條文通過。</p></div>
+</div>
+</div>
+<div class="article-group">
+<div class="article" data-article="34">
+  <div class="article-header">
+    <div class="article-num">第 34 條</div>
+    <div class="article-date">105年3月25日修正，105年4月13日公布</div>
+  </div>
+  <div class="article-body">
+    <p class="clause no-num"><span class="clause-num"></span><span>本法施行日期，除中華民國九十五年五月三十日修正公布之條文，自九十五年七月一日施行；九十六年七月十一日及一百零三年一月二十九日修正公布之條文，自公布後五個月施行；一百零五年三月二十五日修正之條文，由行政院定之外，自公布日施行。</span></p>
+  </div>
+</div>
+<div class="reason-block" data-article="34">
+  <div class="reason-label">修正理由</div>
+  <div class="reason-text"><p>定明本次修正條文之施行日期由行政院定之，且為期文字精簡，將原條文第一項與第二項予以合併規定。</p></div>
+</div>
+<button class="history-toggle" data-article="34" onclick="toggleHistory(this)">
+  法條修正歷程及理由
+  <span class="arrow">▼</span>
+</button>
+<div class="history-content" data-article="34">
+  <div class="history-entry">
+    <div class="history-entry-header">96年6月15日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>本法自公布日施行。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>本法修正條文自公布後五個月施行。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">95年5月5日修正條文</div>
+    <div class="history-clauses"><p class="history-clause"><span class="history-clause-num">1</span><span>本法自公布日施行。</span></p>
+<p class="history-clause"><span class="history-clause-num">2</span><span>本法中華民國九十五年五月五日修正之條文，自中華民國九十五年七月一日施行。</span></p></div>
+    <div class="history-reason-label">修正理由</div><div class="history-reason"><p>一、原條文未修正，列為第一項。</p><p>二、配合刑法修正條文自九十五年七月一日施行，增列第二項，規定修正條文之施行日期。</p></div>
+  </div>
+  <div class="history-entry">
+    <div class="history-entry-header">88年6月22日制定條文</div>
+    <div class="history-clauses"><p class="history-clause no-num"><span class="history-clause-num"></span><span>本法自公布日施行。</span></p></div>
+    <div class="history-reason-label">立法理由</div><div class="history-reason"><p>照黨團協商條文通過。</p></div>
+  </div>
+</div>
+</div>
+</div>
+<p class="no-results" id="noResults">找不到符合的條文</p>
+<script>
+function toggleHistory(btn) {
+  btn.classList.toggle('open');
+  var art = btn.dataset.article;
+  var content = document.querySelector('.history-content[data-article="' + art + '"]');
+  if (content) content.classList.toggle('open');
+}
+var searchInput = document.getElementById('searchInput');
+var noResults   = document.getElementById('noResults');
+searchInput.addEventListener('input', function() {
+  var q = this.value.trim().toLowerCase();
+  var any = false;
+  document.querySelectorAll('.article-group').forEach(function(g) {
+    var txt = g.textContent.toLowerCase();
+    if (!q || txt.includes(q)) { g.style.display = ''; any = true; }
+    else { g.style.display = 'none'; }
+  });
+  noResults.style.display = any ? 'none' : 'block';
+});
+</script>
+
+<div id="ann-add-popup">
+  <div class="pop-title">選擇螢光色</div>
+  <div class="color-row">
+    <button class="color-btn cb-yellow sel" data-c="yellow" onclick="pickColor(this)" title="黃"></button>
+    <button class="color-btn cb-green"      data-c="green"  onclick="pickColor(this)" title="綠"></button>
+    <button class="color-btn cb-blue"       data-c="blue"   onclick="pickColor(this)" title="藍"></button>
+    <button class="color-btn cb-pink"       data-c="pink"   onclick="pickColor(this)" title="粉"></button>
+  </div>
+  <textarea id="ann-comment-input" rows="2" placeholder="留個備注（可略）…"></textarea>
+  <div class="pop-btns">
+    <button class="pop-btn pop-btn-cancel" onclick="closeAddPopup()">取消</button>
+    <button class="pop-btn pop-btn-save"   onclick="confirmAnnotation()">✓ 標記</button>
+  </div>
+</div>
+
+<div id="ann-view-popup">
+  <div id="ann-view-comment"></div>
+  <div class="view-btns">
+    <button class="view-btn" id="ann-del-btn">🗑 刪除</button>
+    <button class="view-btn" id="ann-close-btn" onclick="closeViewPopup()">關閉</button>
+  </div>
+</div>
+
+<div id="ann-fab">
+  <div id="ann-fab-menu">
+    <button class="fab-menu-btn" onclick="exportAnn()">⬇ 備份匯出 JSON</button>
+    <button class="fab-menu-btn" onclick="importAnn()">⬆ 匯入合併 JSON</button>
+  </div>
+  <button id="ann-fab-main" onclick="toggleFab()" title="注記工具">
+    ✏
+    <span id="ann-badge"></span>
+  </button>
+</div>
+
+<script>
+
+// ══════════════════════════════════════════
+//  通訊保障及監察法 網路注記系統（Supabase）
+// ══════════════════════════════════════════
+var SUPABASE_URL  = 'https://vcbuxpwqawtbsbrpiswh.supabase.co';
+var SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjYnV4cHdxYXd0YnNicnBpc3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjI4NDcsImV4cCI6MjA5NjgzODg0N30.EmvKdBE1LWdrI7yfVefv5pb9ioyMLFdtg3MKbmd4VvQ';
+var LAW_ID        = 'tongxun';
+var TABLE         = 'annotations';
+var CACHE_KEY     = 'tongxun_ann_cache';
+
+var db       = null;   // Supabase client
+var annData  = {};
+var curColor = 'yellow';
+var pending  = null;
+var fabOpen  = false;
+var addPopupOpenedAt = 0;
+
+// ── 初始化 Supabase ───────────────────────
+function initSupabase() {
+  try {
+    db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return true;
+  } catch(e) { return false; }
+}
+
+function setConn(state, text) {
+  var dot  = document.getElementById('conn-dot');
+  var label = document.getElementById('conn-text');
+  dot.className = state;   // 'ok' | 'err' | 'loading'
+  if (label && text) label.textContent = text;
+}
+
+// ── 資料載入（Supabase → localStorage cache → DOM）────────────
+async function loadAnn() {
+  // 先從 cache 快速顯示
+  try {
+    var cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      var list = JSON.parse(cached);
+      annData = {};
+      list.forEach(function(a) { annData[a.id] = a; });
+      refreshBadge(); applyAll();
+    }
+  } catch(e) {}
+
+  if (!initSupabase()) {
+    setConn('err', '設定錯誤：請填入 Supabase URL 和 Key');
+    return;
+  }
+
+  setConn('loading', '同步中…');
+  try {
+    var res = await db.from(TABLE).select('*').eq('law', LAW_ID);
+    if (res.error) throw res.error;
+    annData = {};
+    (res.data || []).forEach(function(a) { annData[a.id] = a; });
+    localStorage.setItem(CACHE_KEY, JSON.stringify(res.data || []));
+    refreshBadge(); applyAll();
+    setConn('ok', '已同步 · ' + Object.keys(annData).length + ' 筆注記');
+  } catch(e) {
+    setConn('err', '連線失敗（' + (e.message || e) + '）');
+  }
+}
+
+// ── 儲存單筆注記 ────────────────────────
+function saveAnn(ann) {
+  ann.law = LAW_ID;   // 確保帶上法典識別碼
+  annData[ann.id] = ann;
+  updateCache();
+  refreshBadge();
+  if (db) {
+    db.from(TABLE).upsert(ann).then(function(r) {
+      if (r.error) setConn('err', '儲存失敗');
+      else setConn('ok', '已同步 · ' + Object.keys(annData).length + ' 筆注記');
+    });
+  }
+}
+
+function deleteAnn(id) {
+  delete annData[id];
+  updateCache();
+  refreshBadge();
+  if (db) {
+    db.from(TABLE).delete().eq('id', id).then(function(r) {
+      if (r.error) setConn('err', '刪除失敗');
+      else setConn('ok', '已同步 · ' + Object.keys(annData).length + ' 筆注記');
+    });
+  }
+}
+
+function updateCache() {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(allAnns())); } catch(e) {}
+}
+
+function allAnns() { return Object.values(annData); }
+
+function refreshBadge() {
+  var n = Object.keys(annData).length;
+  var b = document.getElementById('ann-badge');
+  b.textContent = n || ''; b.style.display = n ? 'block' : 'none';
+}
+
+// ── 套用注記到 DOM ──────────────────────
+function applyAll() {
+  document.querySelectorAll('mark.ann').forEach(function(m) {
+    var p = m.parentNode;
+    while (m.firstChild) p.insertBefore(m.firstChild, m);
+    p.removeChild(m); p.normalize();
+  });
+  allAnns().forEach(function(ann) { applyOne(ann); });
+}
+
+function applyOne(ann) {
+  var artEl = document.querySelector('.article[data-article="' + ann.article_id + '"]');
+  if (!artEl) return;
+  var body = artEl.querySelector('.article-body');
+  if (!body) return;
+
+  var found = findText(body, ann.text, ann.context_before || '');
+  if (!found) return;
+
+  var range = document.createRange();
+  range.setStart(found.sn, found.so);
+  range.setEnd(found.en, found.eo);
+
+  var mark = document.createElement('mark');
+  mark.className = 'ann ann-' + ann.color + (ann.comment ? ' has-comment' : '');
+  mark.dataset.annId = ann.id;
+
+  try { range.surroundContents(mark); }
+  catch(e) {
+    try { mark.appendChild(range.extractContents()); range.insertNode(mark); }
+    catch(e2) { return; }
+  }
+
+  mark.addEventListener('click', function(ev) {
+    ev.stopPropagation(); openViewPopup(ev, ann);
+  });
+}
+
+// ── 搜尋文字位置 ─────────────────────────
+function findText(body, text, ctx) {
+  var tns = [], w = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, null, false), n;
+  while ((n = w.nextNode())) tns.push(n);
+  var full = '', pos = [];
+  tns.forEach(function(t) { pos.push(full.length); full += t.textContent; });
+
+  var search = ctx ? ctx + text : text;
+  var idx = ctx ? full.indexOf(search) : -1;
+  var off = ctx ? ctx.length : 0;
+  if (idx === -1) { idx = full.indexOf(text); off = 0; }
+  if (idx === -1) return null;
+
+  var start = idx + off, end = start + text.length;
+  var sn = null, so = 0, en = null, eo = 0;
+  for (var i = 0; i < tns.length; i++) {
+    var ns = pos[i], ne = ns + tns[i].textContent.length;
+    if (!sn && start >= ns && start < ne) { sn = tns[i]; so = start - ns; }
+    if (sn   && end   >  ns && end  <= ne) { en = tns[i]; eo = end   - ns; break; }
+  }
+  if (!sn || !en) return null;
+  return { sn:sn, so:so, en:en, eo:eo };
+}
+
+// ── 選取文字偵測 ─────────────────────────
+var selTimer = null;
+document.addEventListener('selectionchange', function() {
+  clearTimeout(selTimer);
+  selTimer = setTimeout(onSelectionSettle, 350);
+});
+
+function onSelectionSettle() {
+  var sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return;
+  var text = sel.toString().trim();
+  if (text.length < 2) return;
+
+  var range = sel.getRangeAt(0);
+  var el = range.commonAncestorContainer;
+  el = (el.nodeType === 3) ? el.parentElement : el;
+  var body  = el.closest('.article-body');
+  if (!body) return;
+  var artEl = body.closest('.article');
+  if (!artEl) return;
+
+  var full   = body.textContent;
+  var selIdx = full.indexOf(text);
+  var ctx    = selIdx > 0 ? full.substring(Math.max(0, selIdx - 24), selIdx) : '';
+
+  pending = {
+    articleId:     artEl.dataset.article,
+    text:          text,
+    contextBefore: ctx,
+    range:         range.cloneRange()
+  };
+  openAddPopup(range);
+}
+
+// ── 新增 popup ───────────────────────────
+function openAddPopup(range) {
+  var pop = document.getElementById('ann-add-popup');
+  document.getElementById('ann-comment-input').value = '';
+  addPopupOpenedAt = Date.now();
+  pop.style.display = 'block';
+  if (window.innerWidth > 640) {
+    var rect = range.getBoundingClientRect();
+    var top  = rect.bottom + window.scrollY + 10;
+    var left = rect.left   + window.scrollX;
+    left = Math.min(Math.max(8, left), window.innerWidth - 280);
+    pop.style.top = top + 'px'; pop.style.left = left + 'px';
+  }
+}
+function closeAddPopup() {
+  document.getElementById('ann-add-popup').style.display = 'none';
+  pending = null;
+  var s = window.getSelection(); if (s) s.removeAllRanges();
+}
+function pickColor(btn) {
+  curColor = btn.dataset.c;
+  document.querySelectorAll('.color-btn').forEach(function(b) {
+    b.classList.toggle('sel', b.dataset.c === curColor);
+  });
+}
+function confirmAnnotation() {
+  if (!pending) return;
+  var ann = {
+    id:             Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    article_id:     pending.articleId,    // Supabase 欄位用 snake_case
+    text:           pending.text,
+    context_before: pending.contextBefore,
+    color:          curColor,
+    comment:        document.getElementById('ann-comment-input').value.trim(),
+    created_at:     Date.now()
+  };
+  saveAnn(ann);
+  closeAddPopup();
+  applyOne(ann);
+}
+
+// ── 查看 popup ───────────────────────────
+function openViewPopup(ev, ann) {
+  var pop = document.getElementById('ann-view-popup');
+  var el  = document.getElementById('ann-view-comment');
+  el.textContent = ann.comment || '（無備注）';
+  el.style.color = ann.comment ? '#333' : '#aaa';
+  document.getElementById('ann-del-btn').onclick = function() {
+    deleteAnn(ann.id); applyAll(); closeViewPopup();
+  };
+  pop.style.display = 'block';
+  if (window.innerWidth > 640) {
+    var rect = ev.target.getBoundingClientRect();
+    var top  = rect.bottom + window.scrollY + 6;
+    var left = rect.left   + window.scrollX;
+    left = Math.min(Math.max(8, left), window.innerWidth - 260);
+    pop.style.top = top + 'px'; pop.style.left = left + 'px';
+  }
+}
+function closeViewPopup() {
+  document.getElementById('ann-view-popup').style.display = 'none';
+}
+
+// ── FAB ──────────────────────────────────
+function toggleFab() {
+  fabOpen = !fabOpen;
+  var menu = document.getElementById('ann-fab-menu');
+  menu.classList.toggle('open', fabOpen);
+  document.getElementById('ann-fab-main').style.background = fabOpen ? '#1a4a38' : '';
+}
+
+// ── 備份匯出 / 匯入 ───────────────────────
+function exportAnn() {
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(
+    [JSON.stringify({ version:1, annotations: allAnns() }, null, 2)],
+    { type:'application/json' }
+  ));
+  a.download = 'annotations_backup.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  if (fabOpen) toggleFab();
+}
+function importAnn() {
+  var inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = function(e) {
+    var f = e.target.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = async function(ev) {
+      try {
+        var data = JSON.parse(ev.target.result);
+        var list = Array.isArray(data) ? data : (data.annotations || []);
+        var added = 0;
+        for (var i = 0; i < list.length; i++) {
+          var ann = list[i];
+          // 相容舊版（camelCase → snake_case）
+          if (ann.articleId && !ann.article_id) {
+            ann.article_id     = ann.articleId;
+            ann.context_before = ann.contextBefore || '';
+          }
+          if (!annData[ann.id]) { saveAnn(ann); added++; }
+        }
+        applyAll();
+        alert('已合併匯入 ' + added + ' 筆注記');
+      } catch(ex) { alert('匯入失敗：' + ex.message); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+  if (fabOpen) toggleFab();
+}
+
+// ── 關閉 popup ───────────────────────────
+document.addEventListener('click', function(e) {
+  var add  = document.getElementById('ann-add-popup');
+  var view = document.getElementById('ann-view-popup');
+  var fab  = document.getElementById('ann-fab');
+  if (add.style.display  !== 'none' && !add.contains(e.target)  &&
+      Date.now() - addPopupOpenedAt > 400) closeAddPopup();
+  if (view.style.display !== 'none' && !view.contains(e.target) &&
+      !e.target.closest('mark.ann')) closeViewPopup();
+  if (fabOpen && !fab.contains(e.target)) toggleFab();
+});
+
+// ── 啟動 ─────────────────────────────────
+loadAnn();
+
+</script>
+</body>
+</html>

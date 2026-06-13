@@ -1697,9 +1697,10 @@ function openAddPopup(range) {
   pop.style.display = 'block';
   if (window.innerWidth > 640) {
     var rect = range.getBoundingClientRect();
-    var top  = rect.bottom + window.scrollY + 10;
-    var left = rect.left   + window.scrollX;
+    var top  = rect.bottom + 10;
+    var left = rect.left;
     left = Math.min(Math.max(8, left), window.innerWidth - 280);
+    top  = Math.min(top, window.innerHeight - 200);
     pop.style.top = top + 'px'; pop.style.left = left + 'px';
   }
 }
@@ -1742,8 +1743,8 @@ function openViewPopup(ev, ann) {
   pop.style.display = 'block';
   if (window.innerWidth > 640) {
     var rect = ev.target.getBoundingClientRect();
-    var top  = rect.bottom + window.scrollY + 6;
-    var left = rect.left   + window.scrollX;
+    var top  = rect.bottom + 6;
+    var left = rect.left;
     left = Math.min(Math.max(8, left), window.innerWidth - 260);
     pop.style.top = top + 'px'; pop.style.left = left + 'px';
   }

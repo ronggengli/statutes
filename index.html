@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>法典查詢系統</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Serif TC", "Georgia", serif;
+    background: #f5f5f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  h1 {
+    font-size: 1.6rem;
+    color: #333;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.05em;
+  }
+  .subtitle {
+    color: #888;
+    font-size: 0.95rem;
+    margin-bottom: 3rem;
+  }
+  .cards {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 700px;
+  }
+  .card {
+    flex: 1;
+    min-width: 240px;
+    max-width: 320px;
+    text-decoration: none;
+    border-radius: 14px;
+    padding: 2rem 1.6rem;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+  }
+  .card.crim {
+    background: linear-gradient(135deg, #2c4a7c, #3d6099);
+  }
+  .card.tongxun {
+    background: linear-gradient(135deg, #2d6b5a, #3d8a70);
+  }
+  .card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .card-desc {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    line-height: 1.5;
+  }
+  .card-arrow {
+    margin-top: 0.8rem;
+    font-size: 1.2rem;
+    opacity: 0.7;
+  }
+  footer {
+    margin-top: 3rem;
+    color: #bbb;
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+  <h1>法典查詢系統</h1>
+  <p class="subtitle">含立法理由・雲端注記同步</p>
+
+  <div class="cards">
+    <a class="card crim" href="刑事訴訟法_網路版.html">
+      <div class="card-title">刑事訴訟法</div>
+      <div class="card-desc">完整條文、歷次修正理由<br>支援全文搜尋與螢光標記</div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a class="card tongxun" href="通訊保障及監察法_網路版.html">
+      <div class="card-title">通訊保障及監察法</div>
+      <div class="card-desc">完整條文、歷次修正理由<br>支援全文搜尋與螢光標記</div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+
+  <footer>注記自動同步至雲端，各裝置皆可存取</footer>
+</body>
+</html>

@@ -18960,6 +18960,23 @@ function findText(body, text, ctx) {
   return { sn:sn, so:so, en:en, eo:eo };
 }
 
+// ── 從 range 實際位置計算 contextBefore（不用 indexOf，避免同文重複錯位）──
+function getContextBefore(range, container) {
+  var tns = [], w = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false), n;
+  while ((n = w.nextNode())) tns.push(n);
+  var full = '', pos = [];
+  tns.forEach(function(t) { pos.push(full.length); full += t.textContent; });
+  var startNode = range.startContainer;
+  var startOff  = range.startOffset;
+  for (var i = 0; i < tns.length; i++) {
+    if (tns[i] === startNode) {
+      var startIdx = pos[i] + startOff;
+      return full.substring(Math.max(0, startIdx - 24), startIdx);
+    }
+  }
+  return '';
+}
+
 // ── 選取文字偵測（支援條文本文 & 修正/立法理由）──────
 var selTimer = null;
 document.addEventListener('selectionchange', function() {
@@ -18982,21 +18999,21 @@ function onSelectionSettle() {
   var reasonEl = el.closest('.reason-text');
   if (!bodyEl && !reasonEl) return;
 
-  var artId, full;
+  var container, artId;
   if (bodyEl) {
     var artEl = bodyEl.closest('.article');
     if (!artEl) return;
-    artId = artEl.dataset.article;          // e.g. "5"
-    full  = bodyEl.textContent;
+    artId     = artEl.dataset.article;      // e.g. "5"
+    container = bodyEl;
   } else {
     var rb = reasonEl.closest('.reason-block');
     if (!rb) return;
-    artId = 'r:' + rb.dataset.article;      // e.g. "r:5"（r: 前綴代表 reason）
-    full  = reasonEl.textContent;
+    artId     = 'r:' + rb.dataset.article;  // e.g. "r:5"（r: 前綴代表 reason）
+    container = reasonEl;
   }
 
-  var selIdx = full.indexOf(text);
-  var ctx    = selIdx > 0 ? full.substring(Math.max(0, selIdx - 24), selIdx) : '';
+  // 從 range 實際位置往回取 context，正確處理同文重複的情形
+  var ctx = getContextBefore(range, container);
 
   pending = { articleId: artId, text: text, contextBefore: ctx, range: range.cloneRange() };
   openAddPopup(range);

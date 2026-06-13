@@ -18800,12 +18800,12 @@ var LAW_ID        = 'crim_pro';
 var TABLE         = 'annotations';
 var CACHE_KEY     = 'crim_pro_ann_cache';
 
-var db       = null;   // Supabase client
-var annData  = {};
-var curColor = 'yellow';
-var pending  = null;
-var fabOpen  = false;
-var addPopupOpenedAt = 0;
+var db              = null;
+var annData         = {};
+var curColor        = 'yellow';
+var pending         = null;
+var fabOpen         = false;
+var popupJustOpened = false;   // flag 機制，防止 popup 被緊接的 click 誤關
 
 // ── 初始化 Supabase ───────────────────────
 function initSupabase() {
@@ -18816,15 +18816,14 @@ function initSupabase() {
 }
 
 function setConn(state, text) {
-  var dot  = document.getElementById('conn-dot');
+  var dot   = document.getElementById('conn-dot');
   var label = document.getElementById('conn-text');
-  dot.className = state;   // 'ok' | 'err' | 'loading'
+  dot.className = state;
   if (label && text) label.textContent = text;
 }
 
-// ── 資料載入（Supabase → localStorage cache → DOM）────────────
+// ── 資料載入 ─────────────────────────────
 async function loadAnn() {
-  // 先從 cache 快速顯示
   try {
     var cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
@@ -18854,12 +18853,11 @@ async function loadAnn() {
   }
 }
 
-// ── 儲存單筆注記 ────────────────────────
+// ── 儲存 / 刪除 ──────────────────────────
 function saveAnn(ann) {
-  ann.law = LAW_ID;   // 確保帶上法典識別碼
+  ann.law = LAW_ID;
   annData[ann.id] = ann;
-  updateCache();
-  refreshBadge();
+  updateCache(); refreshBadge();
   if (db) {
     db.from(TABLE).upsert(ann).then(function(r) {
       if (r.error) setConn('err', '儲存失敗');
@@ -18870,8 +18868,7 @@ function saveAnn(ann) {
 
 function deleteAnn(id) {
   delete annData[id];
-  updateCache();
-  refreshBadge();
+  updateCache(); refreshBadge();
   if (db) {
     db.from(TABLE).delete().eq('id', id).then(function(r) {
       if (r.error) setConn('err', '刪除失敗');
@@ -18883,13 +18880,24 @@ function deleteAnn(id) {
 function updateCache() {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify(allAnns())); } catch(e) {}
 }
-
 function allAnns() { return Object.values(annData); }
-
 function refreshBadge() {
   var n = Object.keys(annData).length;
   var b = document.getElementById('ann-badge');
   b.textContent = n || ''; b.style.display = n ? 'block' : 'none';
+}
+
+// ── 取得容器（支援條文本文 & 修正/立法理由）──────────
+// article_id 以 'r:' 開頭 → reason-block；否則 → article-body
+function getContainer(articleId) {
+  if (articleId.slice(0, 2) === 'r:') {
+    var realId = articleId.slice(2);
+    var rb = document.querySelector('.reason-block[data-article="' + realId + '"]');
+    return rb ? rb.querySelector('.reason-text') : null;
+  } else {
+    var artEl = document.querySelector('.article[data-article="' + articleId + '"]');
+    return artEl ? artEl.querySelector('.article-body') : null;
+  }
 }
 
 // ── 套用注記到 DOM ──────────────────────
@@ -18903,12 +18911,10 @@ function applyAll() {
 }
 
 function applyOne(ann) {
-  var artEl = document.querySelector('.article[data-article="' + ann.article_id + '"]');
-  if (!artEl) return;
-  var body = artEl.querySelector('.article-body');
-  if (!body) return;
+  var container = getContainer(ann.article_id);
+  if (!container) return;
 
-  var found = findText(body, ann.text, ann.context_before || '');
+  var found = findText(container, ann.text, ann.context_before || '');
   if (!found) return;
 
   var range = document.createRange();
@@ -18954,7 +18960,7 @@ function findText(body, text, ctx) {
   return { sn:sn, so:so, en:en, eo:eo };
 }
 
-// ── 選取文字偵測 ─────────────────────────
+// ── 選取文字偵測（支援條文本文 & 修正/立法理由）──────
 var selTimer = null;
 document.addEventListener('selectionchange', function() {
   clearTimeout(selTimer);
@@ -18970,21 +18976,29 @@ function onSelectionSettle() {
   var range = sel.getRangeAt(0);
   var el = range.commonAncestorContainer;
   el = (el.nodeType === 3) ? el.parentElement : el;
-  var body  = el.closest('.article-body');
-  if (!body) return;
-  var artEl = body.closest('.article');
-  if (!artEl) return;
 
-  var full   = body.textContent;
+  // 接受 article-body（條文）或 reason-text（修正/立法理由）
+  var bodyEl   = el.closest('.article-body');
+  var reasonEl = el.closest('.reason-text');
+  if (!bodyEl && !reasonEl) return;
+
+  var artId, full;
+  if (bodyEl) {
+    var artEl = bodyEl.closest('.article');
+    if (!artEl) return;
+    artId = artEl.dataset.article;          // e.g. "5"
+    full  = bodyEl.textContent;
+  } else {
+    var rb = reasonEl.closest('.reason-block');
+    if (!rb) return;
+    artId = 'r:' + rb.dataset.article;      // e.g. "r:5"（r: 前綴代表 reason）
+    full  = reasonEl.textContent;
+  }
+
   var selIdx = full.indexOf(text);
   var ctx    = selIdx > 0 ? full.substring(Math.max(0, selIdx - 24), selIdx) : '';
 
-  pending = {
-    articleId:     artEl.dataset.article,
-    text:          text,
-    contextBefore: ctx,
-    range:         range.cloneRange()
-  };
+  pending = { articleId: artId, text: text, contextBefore: ctx, range: range.cloneRange() };
   openAddPopup(range);
 }
 
@@ -18992,14 +19006,17 @@ function onSelectionSettle() {
 function openAddPopup(range) {
   var pop = document.getElementById('ann-add-popup');
   document.getElementById('ann-comment-input').value = '';
-  addPopupOpenedAt = Date.now();
   pop.style.display = 'block';
+  // flag 機制：popup 剛開啟時的 click 不關閉它
+  popupJustOpened = true;
+  setTimeout(function() { popupJustOpened = false; }, 800);
   if (window.innerWidth > 640) {
+    // position: fixed → 直接用 viewport 座標，不需加 scrollY/scrollX
     var rect = range.getBoundingClientRect();
     var top  = rect.bottom + 10;
     var left = rect.left;
-    left = Math.min(Math.max(8, left), window.innerWidth - 280);
-    top  = Math.min(top, window.innerHeight - 200);
+    left = Math.min(Math.max(8, left), window.innerWidth  - 280);
+    top  = Math.min(top,              window.innerHeight - 200);
     pop.style.top = top + 'px'; pop.style.left = left + 'px';
   }
 }
@@ -19018,7 +19035,7 @@ function confirmAnnotation() {
   if (!pending) return;
   var ann = {
     id:             Date.now() + '_' + Math.random().toString(36).slice(2,6),
-    article_id:     pending.articleId,    // Supabase 欄位用 snake_case
+    article_id:     pending.articleId,
     text:           pending.text,
     context_before: pending.contextBefore,
     color:          curColor,
@@ -19044,7 +19061,8 @@ function openViewPopup(ev, ann) {
     var rect = ev.target.getBoundingClientRect();
     var top  = rect.bottom + 6;
     var left = rect.left;
-    left = Math.min(Math.max(8, left), window.innerWidth - 260);
+    left = Math.min(Math.max(8, left), window.innerWidth  - 260);
+    top  = Math.min(top,              window.innerHeight - 150);
     pop.style.top = top + 'px'; pop.style.left = left + 'px';
   }
 }
@@ -19084,7 +19102,6 @@ function importAnn() {
         var added = 0;
         for (var i = 0; i < list.length; i++) {
           var ann = list[i];
-          // 相容舊版（camelCase → snake_case）
           if (ann.articleId && !ann.article_id) {
             ann.article_id     = ann.articleId;
             ann.context_before = ann.contextBefore || '';
@@ -19101,13 +19118,12 @@ function importAnn() {
   if (fabOpen) toggleFab();
 }
 
-// ── 關閉 popup ───────────────────────────
+// ── 關閉 popup（flag 機制防止誤關）──────
 document.addEventListener('click', function(e) {
   var add  = document.getElementById('ann-add-popup');
   var view = document.getElementById('ann-view-popup');
   var fab  = document.getElementById('ann-fab');
-  if (add.style.display  !== 'none' && !add.contains(e.target)  &&
-      Date.now() - addPopupOpenedAt > 400) closeAddPopup();
+  if (add.style.display  !== 'none' && !add.contains(e.target)  && !popupJustOpened) closeAddPopup();
   if (view.style.display !== 'none' && !view.contains(e.target) &&
       !e.target.closest('mark.ann')) closeViewPopup();
   if (fabOpen && !fab.contains(e.target)) toggleFab();
